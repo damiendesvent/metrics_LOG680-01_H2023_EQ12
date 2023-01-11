@@ -2,13 +2,13 @@
 
 ## Description
 
-Cours LOG680 - Introduction à l'approche DevOps
-Session Hiver 2023
-Groupe 01
-Equipe 12
+Cours LOG680 - Introduction à l'approche DevOps  
+Session Hiver 2023  
+Groupe 01  
+Equipe 12  
 
 ## Membres
 
-Damien Desvent
-Bruno Moya Ruiz
-Dorian Perthuis
+Damien Desvent  
+Bruno Moya Ruiz  
+Dorian Perthuis  
