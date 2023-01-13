@@ -2,8 +2,9 @@
 name: Bug report
 about: Create a report to help us improve
 title: ''
-labels: ''
+labels: 'Bug'
 assignees: ''
+project: 'projet LOG680-01 H2023 Equipe 12'
 
 ---
 
