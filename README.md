@@ -12,3 +12,9 @@ Equipe 12
 Damien Desvent  
 Bruno Moya Ruiz  
 Dorian Perthuis  
+
+## Architecture
+Frontend : flutter
+middleware : API Rest
+Banckend : FastAPI (Python)
+BDD : PostgreSQL
