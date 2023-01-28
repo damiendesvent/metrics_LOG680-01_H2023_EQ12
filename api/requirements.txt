@@ -1,0 +1,15 @@
+fastapi
+uvicorn # ASGI server
+starlette # lightweight ASGI framework/toolkit
+pydantic # Data validation and type annotations
+aiosqlite
+databases
+sqlalchemy
+python-jose[cryptography]
+passlib[bcrypt]
+asyncpg
+psycopg2-binary
+opencv-python
+onnx
+onnxruntime-gpu
+jinja2

@@ -1,0 +1,24 @@
+version: "3.9"
+   
+services:
+  db:
+    image: postgres
+    volumes:
+      - ./data/db:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=metrics
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=log680
+  web:
+    build: .
+    command: python main.py
+    volumes:
+      - .:/code
+    ports:
+      - "5000:5000"
+    environment:
+      - POSTGRES_NAME=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    depends_on:
+      - db
