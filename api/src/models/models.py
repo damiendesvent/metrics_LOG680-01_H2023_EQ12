@@ -1,6 +1,6 @@
 from sqlalchemy.sql.schema import ForeignKey
 
-from sqlalchemy import Column, Boolean, String, Float, DateTime, Text
+from sqlalchemy import Column, Boolean, String, Float, DateTime, Text, Integer
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
@@ -19,6 +19,7 @@ def datetime_parser(o):
 class BaseModel(Base):
     __abstract__ = True
 
+    project_id = Column(Integer, nullable=False)
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     created_at = Column(DateTime, default=datetime.utcnow)
     name = Column(String(255))
@@ -40,7 +41,7 @@ class BaseModel(Base):
 
 class ProjectColumn(BaseModel):
     __tablename__ = "columns"
-    cards = relationship("Card", back_populates="projectcolumn", cascade="all, delete-orphan" , lazy="joined")
+    cards = relationship("Card",  cascade="all, delete-orphan" , lazy="joined")
 
     def save(self, db):
         db.add(self)
@@ -51,6 +52,12 @@ class ProjectColumn(BaseModel):
     def delete(self, db):
         db.delete(self)
         db.commit()
+        return self
+
+    def add_card(self, card, db):
+        self.cards.append(card)
+        db.commit()
+        db.refresh(self)
         return self
 
     def __repr__(self):

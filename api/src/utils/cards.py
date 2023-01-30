@@ -7,12 +7,13 @@ import uuid
 
 from sqlalchemy.orm import joinedload
 
-def create_recipe(db: Session, card: src.schemas.Card):
+def create_card(db: Session, card: src.schemas.Card):
     
     id = str(uuid.uuid4())
 
     db_recipe = models.Card(id=id,
-                            bame = card.name,
+                            project_id=card.project_id,
+                            name = card.name,
                             content = card.content,
                             column_id = card.column_id,
                             created_at=card.created_at)
@@ -21,6 +22,8 @@ def create_recipe(db: Session, card: src.schemas.Card):
 
     return db_recipe
 
+def get_card_by_content(db: Session, content: str):
+    return db.query(models.Card).filter(models.Card.content == content).first()
 
 def get_card_by_id(db: Session, id: str):
     return db.query(models.Card).filter(models.Card.id == id).first()
