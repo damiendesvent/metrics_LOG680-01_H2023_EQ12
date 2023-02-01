@@ -1,3 +1,4 @@
+import json
 import os
 from background_snapshot import Worker
 from src.utils.db_manager import DbManager
@@ -28,11 +29,18 @@ logging.info("Log file will be saved to temporary path: {0}".format(dir_path))
 Base.metadata.create_all(bind=engine)
 
 # github_token = os.environ.get('GITHUB_TOKEN')
-github_token = open('api/github_token.txt', 'r').read()
-print(github_token)
+# read json file settings.json
+with open('api/settings.json', 'r') as f:
+    settings = json.load(f)
+
+github_token = settings['github_token']
+snapshot_interval = settings['snapshot_interval'] # in minutes
+
+
+print(settings)
 
 # start a background task that will clean up old connections
-worker = Worker(github_token, SessionLocal(), project_id=3, project_owner='damiendesvent')
+worker = Worker(github_token, snapshot_interval, SessionLocal(), snapshot_interval=snapshot_interval, project_id=3, project_owner='damiendesvent')
 
 app = FastAPI()
 app.include_router(cards.router)

@@ -21,3 +21,12 @@ Le serveur fonctionne avec Docker et Docker-Compose. Pour exécuter le serveur i
 `sudo  docker compose --file "api/docker-compose.yaml" up -d --build `
 
 Cette comande, initialise le postgresql database dans docker-compose.yaml, et apres un container avec Python 3.10 pour faire fonctionner fastapi.
+
+Le port du API est 5000. Il fait une snapshot chaque 20 secondes, mais sa ce peut change avec un fichier json settings.json :
+
+`
+{
+    "github_token": "ghp_xxxxXXXXXXXXXXXXXXXXXXXXXX",
+    "snapshot_interval" : 0.2 # MINUTES 
+}
+`

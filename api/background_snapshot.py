@@ -32,10 +32,10 @@ logging.basicConfig(filename=dir_path, filemode='w', format='%(name)s - %(leveln
 logging.info("Log file will be saved to temporary path: {0}".format(dir_path))
 
 class Worker:
-    def __init__(self, github_token, db, project_id=3, project_owner='damiendesvent'):
+    def __init__(self, github_toke, db, snapshot_interval=0.2, project_id=3, project_owner='damiendesvent'):
         # logging = logging
 
-        schedule.every(0.2).minutes.do(self.background_job)
+        schedule.every(snapshot_interval).minutes.do(self.background_job)
 
         # Start the background thread
         self.stop_run_continuously = self.run_continuously()
