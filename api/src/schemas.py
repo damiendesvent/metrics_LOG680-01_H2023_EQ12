@@ -17,6 +17,8 @@ class Base(BaseModel):
 class Card(Base):
     content: str
     column_id: str
+    parent_card_id: str
+    updated_at: datetime
 
     class Config:
         orm_mode = True

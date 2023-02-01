@@ -57,7 +57,7 @@ class GithubClient:
         result = self.client.execute(query, variable_values={"username": username})
         return result
 
-    def get_columns_for_project(self, project_id, username="damiendesvent"):
+    def get_columns_for_project(self, project_id, username="damiendesvent", debug=False):
         query = gql(
             """
             query getUser($login: String!, $number: Int!) {
@@ -111,7 +111,8 @@ class GithubClient:
         result = self.client.execute(query, variable_values={"login": username, "number": project_id})
 
         # print json beautified
-        print(json.dumps(result, indent=4, sort_keys=True))
+        if debug:
+          print(json.dumps(result, indent=4, sort_keys=True))
 
 
         return result

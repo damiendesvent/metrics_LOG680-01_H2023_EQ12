@@ -68,7 +68,9 @@ class Card(BaseModel):
 
     content = Column(Text)
     column_id = Column(UUID(as_uuid=True), ForeignKey("columns.id"))
-
+    parent_card_id = Column(UUID(as_uuid=True), ForeignKey("cards.id")) # if the card is a child of another card
+    uploaded_at = Column(DateTime, default=datetime.utcnow) # when the card was uploaded to the column (not when it was created on Github Website)
+     
     def save(self, db):
         db.add(self)
         db.commit()

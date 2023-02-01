@@ -1,3 +1,4 @@
+import datetime
 from sqlalchemy.orm import Session
 
 from src.models import models
@@ -25,6 +26,9 @@ def create_card(db: Session, card: src.schemas.Card):
 def get_card_by_content(db: Session, content: str):
     return db.query(models.Card).filter(models.Card.content == content).first()
 
+def get_card_by_content_and_created_at(db: Session, content: str, created_at: datetime):
+    return db.query(models.Card).filter(models.Card.content == content).filter(models.Card.created_at == created_at).filter(models.Card.parent_card_id == None).first()
+
 def get_card_by_id(db: Session, id: str):
     return db.query(models.Card).filter(models.Card.id == id).first()
 
@@ -34,8 +38,8 @@ def get_cards_by_column_id(db: Session, column_id: str):
 def get_cards_by_column_id_with_column(db: Session, column_id: str):
     return db.query(models.Card).options(joinedload(models.Card.column)).filter(models.Card.column_id == column_id).all()
 
-def get_cards_by_column_id_with_time_range(db: Session, column_id: str , start_time: int, end_time: int, items_per_page: int, offset: int):
-    return db.query(models.Card).filter(models.Card.column_id == column_id).filter(models.Card.created_at >= start_time).filter(models.Card.created_at <= end_time).limit(items_per_page).offset(offset).all()
+def get_cards_by_column_id_with_time_range(db: Session, column_id: str , start_time: datetime, end_time: datetime, items_per_page: int, offset: int):
+    return db.query(models.Card).filter(models.Card.column_id == column_id).filter(models.Card.uploaded_at >= start_time).filter(models.Card.uploaded_at <= end_time).limit(items_per_page).offset(offset).all()
 
 def get_total_count(db: Session):
     return db.query(models.Card).count()

@@ -34,9 +34,12 @@ async def get_column_cards_by_time_range(column_id: str, start_date: datetime, e
     if start_date > end_date:
         raise HTTPException(status_code=400, detail="start_date must be less than end_date")
 
-    if src.utils.cards.get_card_by_id(db, column_id) is None:
+    if src.utils.columns.get_column_by_id(db, column_id) is None:
         raise HTTPException(status_code=404, detail="Column not found with id: " + column_id)
 
+    print(start_date.strftime("%Y-%m-%d %H:%M:%S"))
+    print(end_date.strftime("%Y-%m-%d %H:%M:%S"))
+    
     cards = src.utils.cards.get_cards_by_column_id_with_time_range(db, column_id,  start_date, end_date, items_count, offset)
 
     return JSONResponse(
