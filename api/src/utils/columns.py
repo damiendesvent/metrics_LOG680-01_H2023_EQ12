@@ -28,3 +28,6 @@ def get_column_by_name(db: Session, name: str):
 
 def get_all_columns(db: Session):
     return db.query(models.ProjectColumn).all()
+
+def get_all_columns_with_cards(db: Session):
+    return db.query(models.ProjectColumn).options(joinedload(models.ProjectColumn.cards)).filter(models.Card.parent_card_id == None).all() 

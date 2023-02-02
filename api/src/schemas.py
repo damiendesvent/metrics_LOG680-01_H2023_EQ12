@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import List, Union
 from pydantic import BaseModel
 
@@ -19,6 +19,8 @@ class Card(Base):
     column_id: str
     parent_card_id: str
     updated_at: datetime
+    finished_at: datetime
+    lead_time: float # time between the creation of the card and the upload of the card to the column done in seconds
 
     class Config:
         orm_mode = True

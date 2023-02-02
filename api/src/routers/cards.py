@@ -68,8 +68,8 @@ async def get_column_cards(column_id: str, db : Session = Depends(get_db), page_
             content={"page_id": page_number, "items_count": len(cards), "next_page_id": page_number+1, "cards": jsonable_encoder(cards)},
         )
 
-@router.get("/get_all_columns", response_model=List[src.schemas.ProjectColumn])
-async def get_all_columns(db : Session = Depends(get_db), page_number: int = 1, items_count: int = 20):
+@router.get("/get_all_columns_with_cards", response_model=List[src.schemas.ProjectColumn])
+async def get_all_columns_with_cards(db : Session = Depends(get_db), page_number: int = 1, items_count: int = 20):
     offset = (page_number - 1) * items_count
 
     if page_number < 1:
@@ -78,7 +78,8 @@ async def get_all_columns(db : Session = Depends(get_db), page_number: int = 1, 
     if items_count < 1:
         raise HTTPException(status_code=400, detail ="items_count must be greater than 0")
 
-    columns = src.utils.columns.get_all_columns(db)
+    # columns = src.utils.columns.get_all_columns(db)
+    columns = src.utils.columns.get_all_columns_with_cards(db)
 
     if columns is None:
         raise HTTPException(status_code=404, detail="Columns not found")
