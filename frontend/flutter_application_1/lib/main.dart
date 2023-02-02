@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
-import 'package:syncfusion_flutter_charts/sparkcharts.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 void main() {
   runApp(const MyApp());
@@ -68,11 +69,36 @@ class _TaskListState extends State<TaskList> {
 
   String dropdownvalue = 'drop1';
   var items = ["drop1", "drop2", "drop3"];
-  var tasks = ["", "", ""];
+  List tasks = [];
   var chipNames = ["Semaine", "Mois", "Max"];
   var dateString = "sur toute la période";
-
   int? selectedIndex = 2;
+
+  void getProjectInfos() async {
+    Uri graphQlUri = Uri.parse('https://api.github.com/graphql');
+
+    http.Response response = await http.post(graphQlUri,
+        headers: {
+          'Authorization': 'Bearer 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',
+        },
+        body: json.encode({
+          "query":
+              "query{ node(id: \"PVT_kwHOBme_us4AKmxQ\") { ... on ProjectV2 { items(first: 20) { nodes { fieldValues(last: 1) { nodes { ... on ProjectV2ItemFieldSingleSelectValue { name } } } content { ... on DraftIssue { title body } ... on Issue { title assignees(first: 10) { nodes { login } } } ... on PullRequest { title assignees(first: 10) { nodes { login }}}}}}}}}"
+        }));
+
+    if (response.body.isNotEmpty) {
+      var items = json.decode(response.body);
+      setState(() {
+        tasks = items['data']['node']['items']['nodes'];
+      });
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    getProjectInfos();
+  }
 
   void _show() async {
     final DateTimeRange? result = await showDateRangePicker(
@@ -87,7 +113,6 @@ class _TaskListState extends State<TaskList> {
 
     if (result != null) {
       // Rebuild the UI
-      print(result.start.toString());
       setState(() {
         _selectedDateRange = result;
       });
@@ -142,9 +167,9 @@ class _TaskListState extends State<TaskList> {
             crossAxisAlignment: WrapCrossAlignment.center,
             direction: Axis.horizontal,
             children: [
-              Icon(Icons.view_list_rounded, size: 25),
+              const Icon(Icons.view_list_rounded, size: 25),
               const Text(" Tâche de "),
-              Container(
+              SizedBox(
                 width: 150.0,
                 child: DropdownButtonFormField(
                   value: dropdownvalue,
@@ -197,13 +222,13 @@ class _TaskListState extends State<TaskList> {
                       )))),
           Card(
               child: Container(
-                  padding: EdgeInsets.all(15.0),
+                  padding: const EdgeInsets.all(15.0),
                   child: Tooltip(
                       message: "Lead time moyen",
                       child: Chip(
-                          avatar: Icon(Icons.access_time_rounded),
+                          avatar: const Icon(Icons.access_time_rounded),
                           backgroundColor: Colors.blue.shade100,
-                          label: Text(
+                          label: const Text(
                             "5d:5h",
                             style: TextStyle(fontWeight: FontWeight.w600),
                           )))))
@@ -215,9 +240,9 @@ class _TaskListState extends State<TaskList> {
                     width: double.maxFinite,
                     padding: const EdgeInsets.all(15.0),
                     child: ListView.separated(
-                        itemBuilder: (tasks, index) => TaskCard(),
+                        itemBuilder: (task, index) => TaskCard(tasks[index]),
                         separatorBuilder: (_, index) {
-                          return SizedBox(height: 10);
+                          return const SizedBox(height: 10);
                         },
                         itemCount: tasks.length))))
       ],
@@ -252,9 +277,9 @@ class _ColumnsNbTask extends State<ColumnsNbTask> {
         child: Wrap(
             crossAxisAlignment: WrapCrossAlignment.center,
             spacing: 15,
-            children: [
+            children: const [
               Icon(Icons.calculate_rounded, size: 25),
-              const Text("Nombre de tâche actif par colonne")
+              Text("Nombre de tâche actif par colonne")
             ]),
       )),
       const SizedBox(height: 3.0),
@@ -272,15 +297,15 @@ class _ColumnsNbTask extends State<ColumnsNbTask> {
                             children: [
                               Text("${item['name']}"),
                               Container(
-                                  padding: EdgeInsets.symmetric(
+                                  padding: const EdgeInsets.symmetric(
                                       vertical: 3, horizontal: 20),
                                   decoration: BoxDecoration(
                                       border: Border.all(
                                           color: Colors.black54, width: 1.5),
-                                      borderRadius: BorderRadius.all(
+                                      borderRadius: const BorderRadius.all(
                                           Radius.circular(20))),
                                   child: Text("${item['number']}",
-                                      style: TextStyle(
+                                      style: const TextStyle(
                                           fontSize: 20,
                                           fontWeight: FontWeight.w700))),
                             ],
@@ -326,7 +351,6 @@ class _GraphNbTask extends State<GraphNbTask> {
 
     if (result != null) {
       // Rebuild the UI
-      print(result.start.toString());
       setState(() {
         _selectedDateRange = result;
       });
@@ -367,8 +391,7 @@ class _GraphNbTask extends State<GraphNbTask> {
   @override
   Widget build(BuildContext context) {
     return Expanded(
-        child: Container(
-            child: Column(
+        child: Column(
       children: [
         Card(
             child: Container(
@@ -378,9 +401,9 @@ class _GraphNbTask extends State<GraphNbTask> {
                   crossAxisAlignment: WrapCrossAlignment.center,
                   spacing: 15,
                   children: [
-                    Icon(Icons.calendar_month_rounded, size: 25),
-                    Text(" Nombre de tâche de "),
-                    Container(
+                    const Icon(Icons.calendar_month_rounded, size: 25),
+                    const Text(" Nombre de tâche de "),
+                    SizedBox(
                       width: 150.0,
                       child: DropdownButtonFormField(
                         value: dropdownvalue,
@@ -438,18 +461,18 @@ class _GraphNbTask extends State<GraphNbTask> {
                       spacing: 5,
                       children: [
                         Container(
-                            padding: EdgeInsets.symmetric(
+                            padding: const EdgeInsets.symmetric(
                                 vertical: 3, horizontal: 10),
                             decoration: BoxDecoration(
                                 border: Border.all(
                                     color: Colors.black54, width: 1.5),
-                                borderRadius:
-                                    BorderRadius.all(Radius.circular(20))),
+                                borderRadius: const BorderRadius.all(
+                                    Radius.circular(20))),
                             child: Text("$nbTacheDone",
-                                style: TextStyle(
+                                style: const TextStyle(
                                     fontSize: 15,
                                     fontWeight: FontWeight.w700))),
-                        Text("Tâches"),
+                        const Text("Tâches"),
                         Icon(Icons.check_box_rounded,
                             color: Colors.green.shade600, size: 28)
                       ])))
@@ -468,19 +491,23 @@ class _GraphNbTask extends State<GraphNbTask> {
           )),
         )))
       ],
-    )));
+    ));
   }
 }
 
 class TaskCard extends StatelessWidget {
-  TaskCard({super.key});
+  TaskCard(this.task, {super.key});
 
+  final Map task;
   var chipNames = ['chip1', 'chip2'];
-  var taskName = "Nom de la tâche !";
+  String taskName = "";
+  String status = "";
   var creatorName = "Jean dupond";
 
   @override
   Widget build(BuildContext context) {
+    taskName = task['content']['title'];
+    status = task['fieldValues']['nodes'][0]['name'];
     return Container(
         padding: const EdgeInsets.all(15.0),
         decoration: BoxDecoration(
@@ -493,17 +520,16 @@ class TaskCard extends StatelessWidget {
           TableRow(children: [
             Text(
               taskName,
-              style: TextStyle(fontWeight: FontWeight.w900),
+              style: const TextStyle(fontWeight: FontWeight.w900),
             ),
-            Container(
-                alignment: Alignment.centerRight, child: Text("In progress"))
+            Container(alignment: Alignment.centerRight, child: Text(status))
           ]),
           TableRow(children: [
             Container(
-                padding: EdgeInsets.fromLTRB(0, 5, 0, 15),
+                padding: const EdgeInsets.fromLTRB(0, 5, 0, 15),
                 child: Text(
-                  "Créer par ${creatorName} le __/__/____",
-                  style: TextStyle(fontSize: 12, color: Colors.blueGrey),
+                  "Créer par $creatorName le __/__/____",
+                  style: const TextStyle(fontSize: 12, color: Colors.blueGrey),
                 )),
             Container()
           ]),
@@ -524,12 +550,13 @@ class TaskCard extends StatelessWidget {
                     message: "Temps de complétion",
                     child: Chip(
                         backgroundColor: Colors.transparent,
-                        avatar: Icon(Icons.access_time_rounded),
+                        avatar: const Icon(Icons.access_time_rounded),
                         shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.all(Radius.circular(50)),
+                            borderRadius:
+                                const BorderRadius.all(Radius.circular(50)),
                             side: BorderSide(
                                 color: Colors.grey.shade600, width: 1)),
-                        label: Text(
+                        label: const Text(
                           "5d:5h",
                           style: TextStyle(fontWeight: FontWeight.w600),
                         ))))
