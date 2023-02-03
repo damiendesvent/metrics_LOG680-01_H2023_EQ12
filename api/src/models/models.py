@@ -75,7 +75,7 @@ class Card(BaseModel):
     closed = Column(Boolean, default=False)
     closed_at = Column(DateTime, default=None) # when the card was closed if it was closed (None if it was not closed)
     lead_time = Column(Float, default=0) # time between the creation of the card and the upload of the card to the column 
-
+    labels = Column(Text, default="[]")
 
     def save(self, db):
         db.add(self)

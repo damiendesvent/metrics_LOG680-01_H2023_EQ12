@@ -125,6 +125,7 @@ class Worker:
                 closed_at = None,
                 closed = False,
                 lead_time = None,
+                labels = str(card_json['labels']['nodes']),
             )
 
             card = column.add_card(card_schema, self.db)
@@ -143,6 +144,7 @@ class Worker:
                 closed_at = None,
                 closed = False,
                 lead_time = None,
+                labels = str(card_json['labels']['nodes']), 
             )
 
             # update the old card with the new column id
@@ -150,6 +152,7 @@ class Worker:
             card.content = card_json['bodyText'] # if the content changes we are able to store it updated on the snapshot
             card.closed = card_json['closed'] # if the card is closed we update the closed field
             card.closed_at = card_json['closedAt'] # if the card is closed we update the closed at field
+            card.labels = card_json['labels']['nodes'] # if the card has labels we update the labels field
             
 
             if card.closed == True: # if the card is in the finished column and is closed we calculate the lead time

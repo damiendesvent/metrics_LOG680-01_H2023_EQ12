@@ -83,6 +83,11 @@ class GithubClient:
                                         }
                                         closed
                                         closedAt
+                                        labels(first: 10) {
+                                          nodes{
+                                            name
+                                          }
+                                        }
                                     }
                                     ... on PullRequest {
                                         id
@@ -95,6 +100,11 @@ class GithubClient:
                                         }
                                         closed
                                         closedAt
+                                        labels(first: 10) {
+                                          nodes{
+                                            name
+                                          }
+                                        }
                                     }
                                 }
                                 status: fieldValueByName(name: "Status") {

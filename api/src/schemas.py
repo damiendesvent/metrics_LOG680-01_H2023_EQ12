@@ -24,6 +24,8 @@ class Card(Base):
     closed: bool # if the card is closed or not
     closed_at: Union[datetime, None] # when the card was closed if it was closed (None if it was not closed)
 
+    labels = str # json string of the labels  it is like this "[]"
+
     class Config:
         orm_mode = True
 
