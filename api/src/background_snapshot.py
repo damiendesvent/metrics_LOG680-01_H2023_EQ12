@@ -9,7 +9,7 @@ import time
 import threading
 import os
 
-from github import GithubClient
+from src.github import GithubClient
 import src.schemas
 
 from src.models.models import Card
@@ -32,6 +32,7 @@ logging.info("Log file will be saved to temporary path: {0}".format(dir_path))
 class Worker:
     def __init__(self, github_token,  db, snapshot_interval=0.2, project_id=3, project_owner='damiendesvent'):
         # logging = logging
+        print("Initializing worker with snapshot interval: {0}".format(snapshot_interval))
 
         schedule.every(snapshot_interval).minutes.do(self.background_job)
 
@@ -192,6 +193,9 @@ class Worker:
 
 
             logging.info("Lead time: {0} for card {1}".format(card.lead_time, card.id))
+        else:
+            logging.info("Card is not closed, not calculating lead time")
+            
 
     
     def snapshot(self):

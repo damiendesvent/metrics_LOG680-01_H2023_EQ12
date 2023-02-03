@@ -14,3 +14,4 @@ onnx
 onnxruntime-gpu
 jinja2
 schedule
+gql[all]

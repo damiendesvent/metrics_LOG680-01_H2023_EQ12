@@ -59,4 +59,4 @@ def get_total_count(db: Session):
     This function returns all the cards that have been uploaded to the done column
 """
 def get_completed_cards_by_time_range(db: Session, start_time: datetime, end_time: datetime, items_per_page: int, offset: int):
-    return db.query(models.Card).filter(models.Card.uploaded_at >= start_time).filter(models.Card.uploaded_at <= end_time).filter(models.Card.parent_card_id == None).filter(models.Card.lead_time > 0).limit(items_per_page).offset(offset).all()
+    return db.query(models.Card).filter(models.Card.uploaded_at >= start_time).filter(models.Card.uploaded_at <= end_time).filter(models.Card.parent_card_id == None).filter(models.Card.closed == True).limit(items_per_page).offset(offset).all()

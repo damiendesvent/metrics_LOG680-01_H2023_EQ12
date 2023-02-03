@@ -130,7 +130,7 @@ async def get_column_cards(column_id: str, db : Session = Depends(get_db), page_
     Nombre de tâches complétés pour une période donnée 
 """
 @router.get("/get_completed_cards_by_time_range", response_model=List[src.schemas.Card])
-async def get_completed_cards_by_time_range(start_date: datetime, end_date: datetime, db : Session = Depends(get_db), page_number: int = 1, items_count: int = 20):
+async def get_completed_cards_by_time_range(start_date: datetime , end_date: datetime, db : Session = Depends(get_db), page_number: int = 1, items_count: int = 20):
     offset = (page_number - 1) * items_count
 
     if page_number < 1:

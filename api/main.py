@@ -1,6 +1,6 @@
 import json
 import os
-from background_snapshot import Worker
+from src.background_snapshot import Worker
 from src.utils.db_manager import DbManager
 
 import uvicorn
@@ -28,18 +28,27 @@ logging.info("Log file will be saved to temporary path: {0}".format(dir_path))
 
 Base.metadata.create_all(bind=engine)
 
+
 # github_token = os.environ.get('GITHUB_TOKEN')
-# read json file settings.json
-with open('api/settings.json', 'r') as f:
-    settings = json.load(f)
 
-github_token = settings['github_token']
-snapshot_interval = settings['snapshot_interval'] # in minutes
+if os.path.exists('api/settings.json'):
+    print('settings.json file exists')
+    # read json file settings.json
+    with open('api/settings.json', 'r') as f:
+        settings = json.load(f)
+    
+    print(settings)
 
-print(settings)
+    github_token = settings['github_token']
+    snapshot_interval = settings['snapshot_interval'] # in minutes
+else:
+    print('settings.json file does not exist')
+    github_token = os.environ.get('GITHUB_TOKEN')
+    snapshot_interval = os.environ.get('SNAPSHOT_INTERVAL') # in minutes
+
 
 # start a background task that will clean up old connections
-worker = Worker(github_token, SessionLocal(), snapshot_interval=snapshot_interval, project_id=3, project_owner='damiendesvent')
+worker = Worker(github_token, SessionLocal(), snapshot_interval=float(snapshot_interval), project_id=3, project_owner='damiendesvent')
 
 app = FastAPI()
 app.include_router(cards.router)

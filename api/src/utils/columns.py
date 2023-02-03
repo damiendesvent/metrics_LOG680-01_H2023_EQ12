@@ -31,7 +31,8 @@ def get_all_columns(db: Session):
     return db.query(models.ProjectColumn).all()
 
 def get_all_columns_with_cards(db: Session):
-    return db.query(models.ProjectColumn).options(joinedload(models.ProjectColumn.cards)).filter(models.Card.parent_card_id == None).all() 
+    # return db.query(models.ProjectColumn).options(joinedload(models.ProjectColumn.cards)).filter(models.Card.parent_card_id == None).all() 
+    return db.query(models.ProjectColumn).options(joinedload(models.ProjectColumn.cards)).all() 
 
 def get_all_columns_with_cards_by_time_range(db: Session, start_time: datetime, end_time: datetime, items_per_page: int, offset: int):
     return db.query(models.ProjectColumn).options(joinedload(models.ProjectColumn.cards)).filter(models.Card.uploaded_at >= start_time).filter(models.Card.uploaded_at <= end_time).limit(items_per_page).offset(offset).all()
