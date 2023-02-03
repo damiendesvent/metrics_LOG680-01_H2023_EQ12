@@ -115,7 +115,7 @@ async def get_column_cards(column_id: str, db : Session = Depends(get_db), page_
     if items_count < 1:
         raise HTTPException(status_code=400, detail="items_count must be greater than 0")
 
-    if src.utils.cards.get_card_by_id(db, column_id) is None:
+    if src.utils.columns.get_column_by_id(db, column_id) is None:
         raise HTTPException(status_code=404, detail="Column not found with id: " + column_id)
 
     cards = src.utils.cards.get_cards_by_column_id(db, column_id, items_count, offset)

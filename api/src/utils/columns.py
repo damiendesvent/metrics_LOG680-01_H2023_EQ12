@@ -8,6 +8,14 @@ import uuid
 
 from sqlalchemy.orm import joinedload
 
+def __is_valid_uuid(uuid_to_test, version=4):
+    try:
+        uuid_obj = uuid.UUID(uuid_to_test, version=version)
+    except ValueError:
+        return False
+
+    return str(uuid_obj) == uuid_to_test
+
 def create_new_column(db: Session, column: src.schemas.ProjectColumn):
 
     # db_column = models.ProjectColumn(id=column.id,
@@ -21,11 +29,22 @@ def create_new_column(db: Session, column: src.schemas.ProjectColumn):
 
     return db_column
 
-def get_column_by_id(db: Session, id: str):
-    return db.query(models.ProjectColumn).filter(models.ProjectColumn.id == id).first()
 
+"""
+    This function returns a column by its id or by its name
+"""
+def get_column_by_id(db: Session, id: str):
+    if __is_valid_uuid(id) == True:
+        return db.query(models.ProjectColumn).filter(models.ProjectColumn.id == id).first()
+    else:
+        return get_column_by_name(db, id)
+
+"""
+    This function returns a column by its name
+"""
 def get_column_by_name(db: Session, name: str):
     return db.query(models.ProjectColumn).filter(models.ProjectColumn.name == name).first()
+
 
 def get_all_columns(db: Session):
     return db.query(models.ProjectColumn).all()
