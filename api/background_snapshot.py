@@ -110,6 +110,12 @@ class Worker:
 
         card = cards_utils.get_card_by_content_and_created_at(self.db, card_json['bodyText'], card_json['createdAt'])
 
+        labels = card_json['labels']['nodes']
+        if labels:
+            labels = [label['name'] for label in labels]
+        else:
+            labels = []
+
         if card is None: # if the card does not exist we create it and add it to the column
             logging.info("Card does not exist, creating it")
             
@@ -122,11 +128,13 @@ class Worker:
                 content= card_json['bodyText'],
                 created_at= card_json['createdAt'],
                 uploaded_at = datetime.now(),
-                closed_at = None,
-                closed = False,
+                closed_at = card_json['closedAt'] if card_json['closedAt'] else None,
+                closed = card_json['closed'],
                 lead_time = None,
-                labels = str(card_json['labels']['nodes']),
+                labels = str(labels),
             )
+
+            self.check_card_closed(card_json, card_schema) # if the card is closed we calculate the lead time
 
             card = column.add_card(card_schema, self.db)
         else:
@@ -144,7 +152,7 @@ class Worker:
                 closed_at = None,
                 closed = False,
                 lead_time = None,
-                labels = str(card_json['labels']['nodes']), 
+                labels = str(labels),
             )
 
             # update the old card with the new column id
@@ -154,26 +162,36 @@ class Worker:
             card.closed_at = card_json['closedAt'] # if the card is closed we update the closed at field
             card.labels = card_json['labels']['nodes'] # if the card has labels we update the labels field
             
-
-            if card.closed == True: # if the card is in the finished column and is closed we calculate the lead time
-                logging.info("Card is in the finished column and Closed is TRUE , calculating lead time")
-                # calculate the time it took to finish the card
-                # card.finished_at = datetime.now()
-                lead_time = card.closed_at - card.created_at
-                card.lead_time = lead_time.total_seconds()
-
-                # make the lead time positive
-                if card.lead_time < 0:
-                    card.lead_time = card.lead_time * -1
-
-
-                logging.info("Lead time: {0} for card {1}".format(card.lead_time, card.id))
+            self.check_card_closed(card_json, card) # if the card is closed we calculate the lead time
 
             card.save(self.db) # we save the card to the database to update the column id
 
             card = column.add_card(card_schema, self.db)
 
         return card
+
+    def check_card_closed(self, card_json, card):
+        if card.closed == True: # if the card is in the finished column and is closed we calculate the lead time
+            logging.info("Card is in the finished column and Closed is TRUE , calculating lead time")
+            # calculate the time it took to finish the card
+            # card.finished_at = datetime.now()
+            
+            if type(card_json['closedAt']) is str:
+                card.closed_at = datetime.strptime(card_json['closedAt'], '%Y-%m-%dT%H:%M:%SZ')
+
+            if type(card_json['createdAt']) is str:
+                card.created_at = datetime.strptime(card_json['createdAt'], '%Y-%m-%dT%H:%M:%SZ')
+            
+
+            lead_time = card.closed_at - card.created_at
+            card.lead_time = lead_time.total_seconds()
+
+            # make the lead time positive
+            if card.lead_time < 0:
+                card.lead_time = card.lead_time * -1
+
+
+            logging.info("Lead time: {0} for card {1}".format(card.lead_time, card.id))
 
     
     def snapshot(self):
