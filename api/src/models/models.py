@@ -71,7 +71,9 @@ class Card(BaseModel):
     parent_card_id = Column(UUID(as_uuid=True), ForeignKey("cards.id")) # if the card is a child of another card
 
     uploaded_at = Column(DateTime, default=datetime.utcnow) # when the card was uploaded to the column (not when it was created on Github Website)
-    finished_at = Column(DateTime, default=datetime.utcnow) # when the card was moved to the finished column
+    # finished_at = Column(DateTime, default=datetime.utcnow) # when the card was moved to the finished column
+    closed = Column(Boolean, default=False)
+    closed_at = Column(DateTime, default=None) # when the card was closed if it was closed (None if it was not closed)
     lead_time = Column(Float, default=0) # time between the creation of the card and the upload of the card to the column 
 
 

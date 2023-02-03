@@ -38,9 +38,25 @@ def get_cards_by_column_id(db: Session, column_id: str):
 def get_cards_by_column_id_with_column(db: Session, column_id: str):
     return db.query(models.Card).options(joinedload(models.Card.column)).filter(models.Card.column_id == column_id).all()
 
+
+"""
+    This function returns all the cards of a specific column that have been uploaded in a specific time range
+"""
 def get_cards_by_column_id_with_time_range(db: Session, column_id: str , start_time: datetime, end_time: datetime, items_per_page: int, offset: int):
     return db.query(models.Card).filter(models.Card.column_id == column_id).filter(models.Card.uploaded_at >= start_time).filter(models.Card.uploaded_at <= end_time).limit(items_per_page).offset(offset).all()
+
+"""
+    This function returns all the cards that have been uploaded in a specific time range
+"""
+def get_cards_by_time_range(db: Session, start_time: datetime, end_time: datetime, items_per_page: int, offset: int):
+    return db.query(models.Card).filter(models.Card.uploaded_at >= start_time).filter(models.Card.uploaded_at <= end_time).limit(items_per_page).offset(offset).all()
 
 def get_total_count(db: Session):
     return db.query(models.Card).count()
 
+
+"""
+    This function returns all the cards that have been uploaded to the done column
+"""
+def get_completed_cards_by_time_range(db: Session, start_time: datetime, end_time: datetime, items_per_page: int, offset: int):
+    return db.query(models.Card).filter(models.Card.uploaded_at >= start_time).filter(models.Card.uploaded_at <= end_time).filter(models.Card.parent_card_id == None).filter(models.Card.lead_time > 0).limit(items_per_page).offset(offset).all()

@@ -35,13 +35,11 @@ with open('api/settings.json', 'r') as f:
 
 github_token = settings['github_token']
 snapshot_interval = settings['snapshot_interval'] # in minutes
-finished_column_name = settings['finished_column_name']
-
 
 print(settings)
 
 # start a background task that will clean up old connections
-worker = Worker(github_token, SessionLocal(), finished_column_name=finished_column_name, snapshot_interval=snapshot_interval, project_id=3, project_owner='damiendesvent')
+worker = Worker(github_token, SessionLocal(), snapshot_interval=snapshot_interval, project_id=3, project_owner='damiendesvent')
 
 app = FastAPI()
 app.include_router(cards.router)

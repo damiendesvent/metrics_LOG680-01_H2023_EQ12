@@ -30,7 +30,7 @@ logging.basicConfig(filename=dir_path, filemode='w', format='%(name)s - %(leveln
 logging.info("Log file will be saved to temporary path: {0}".format(dir_path))
 
 class Worker:
-    def __init__(self, github_token,  db, finished_column_name="done", snapshot_interval=0.2, project_id=3, project_owner='damiendesvent'):
+    def __init__(self, github_token,  db, snapshot_interval=0.2, project_id=3, project_owner='damiendesvent'):
         # logging = logging
 
         schedule.every(snapshot_interval).minutes.do(self.background_job)
@@ -46,7 +46,6 @@ class Worker:
         self.db = db
         self.project_id = project_id
         self.project_owner = project_owner
-        self.finished_column_name = finished_column_name
 
         self.last_snapshot_json = self.__get_last_snapshot()
 
@@ -123,26 +122,15 @@ class Worker:
                 content= card_json['bodyText'],
                 created_at= card_json['createdAt'],
                 uploaded_at = datetime.now(),
-                finished_at = None,
+                closed_at = None,
+                closed = False,
                 lead_time = None,
             )
 
             card = column.add_card(card_schema, self.db)
         else:
             logging.info("Card already exists") 
-
-            # create a new card with the same content, but in the new column . We cant have two cards with the same id on the database
-            # so we create a new Id that can relate to the old id
-
-            # new_id = str(card.id) + "_new_" + str(uuid.uuid4())[0:5] # we add a random string to the id to make it unique, but still related to the old id .
-            # we do this because we want to keep the old card in the old column, but we want to add the card to the new column as well
-            # the first uuid is the old id from original card, the second is the new id
-
-            # make a new id getting first 5 characters of the old id and adding a uuid
-            # new_id = str(card.id)[0:5] + str(uuid.uuid4())[0:5]
-
-            
-
+        
             card_schema = Card(
                 id=str(uuid.uuid4()),
                 parent_card_id=card.id,
@@ -152,27 +140,24 @@ class Worker:
                 content=card_json['bodyText'], # if the content changes we are able to store it updated on the snapshot
                 created_at=card_json['createdAt'],
                 uploaded_at = datetime.now(),
+                closed_at = None,
+                closed = False,
+                lead_time = None,
             )
 
             # update the old card with the new column id
             card.column_id = column.id
             card.content = card_json['bodyText'] # if the content changes we are able to store it updated on the snapshot
+            card.closed = card_json['closed'] # if the card is closed we update the closed field
+            card.closed_at = card_json['closedAt'] # if the card is closed we update the closed at field
             
 
-            if column.name == self.finished_column_name:
-                logging.info("Card is in the finished column, calculating lead time")
+            if card.closed == True: # if the card is in the finished column and is closed we calculate the lead time
+                logging.info("Card is in the finished column and Closed is TRUE , calculating lead time")
                 # calculate the time it took to finish the card
-                card.finished_at = datetime.now()
-                lead_time = card.finished_at - card.created_at
+                # card.finished_at = datetime.now()
+                lead_time = card.closed_at - card.created_at
                 card.lead_time = lead_time.total_seconds()
-
-                # q: why lead_time.total_seconds() and not lead_time.seconds?
-                # a: because lead_time.seconds only returns the seconds of the time, not the days, hours, minutes, etc
-                # so if the card took 2 days to finish, lead_time.seconds would return 0, but lead_time.total_seconds() would return 172800
-                # q: why it is negative?
-                # a: because the finished_at is the time the card was moved to the finished column, and the created_at is the time the card was created
-                # so if the card was created at 10:00 and finished at 12:00, the lead time would be 2 hours, but the finished_at would be 12:00 and the created_at would be 10:00
-                # so the lead time would be 12:00 - 10:00 = 2 hours, but the lead time is 2 hours, not -2 hours, so we need to make it positive
 
                 # make the lead time positive
                 if card.lead_time < 0:
@@ -216,6 +201,9 @@ class Worker:
 
             if self.last_snapshot_json is not None:
                 last_snapshot_nodes = self.last_snapshot_json['user']['projectV2']['items']['nodes']
+
+                current_card_found = False # we use this to check if the card was found on the last snapshot
+
                
                 for last_snapshot_node in last_snapshot_nodes:
                     last_snapshot_card_json = last_snapshot_node['content']
@@ -238,10 +226,12 @@ class Worker:
 
                             # we create the card in the new column with a new id that is related to the old id
                             created_card = self.create_card_if_not_exists(card_json, column_schema)
+                            current_card_found = True 
+                            break
 
 
                 # if we have a new card that was not in the last snapshot, we create it
-                if last_snapshot_card_created_at != card_created_at:
+                if not current_card_found and cards_utils.get_card_by_content_and_created_at(self.db, card_json['bodyText'], card_created_at) is None:
                     logging.info("New card {0} in column {1}".format(card_json['title'], column_name))
                     created_card = self.create_card_if_not_exists(card_json, column_schema)
 

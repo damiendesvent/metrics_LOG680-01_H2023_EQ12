@@ -81,6 +81,8 @@ class GithubClient:
                                         author {
                                             login
                                         }
+                                        closed
+                                        closedAt
                                     }
                                     ... on PullRequest {
                                         id
@@ -91,6 +93,8 @@ class GithubClient:
                                         author {
                                             login
                                         }
+                                        closed
+                                        closedAt
                                     }
                                 }
                                 status: fieldValueByName(name: "Status") {

@@ -19,8 +19,10 @@ class Card(Base):
     column_id: str
     parent_card_id: str
     updated_at: datetime
-    finished_at: datetime
     lead_time: float # time between the creation of the card and the upload of the card to the column done in seconds
+    
+    closed: bool # if the card is closed or not
+    closed_at: Union[datetime, None] # when the card was closed if it was closed (None if it was not closed)
 
     class Config:
         orm_mode = True
