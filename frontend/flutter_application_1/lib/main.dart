@@ -3,7 +3,11 @@ import 'package:syncfusion_flutter_charts/charts.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
+List tasks = [];
+List<Map> columns = [];
+
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
   runApp(const MyApp());
 }
 
@@ -14,7 +18,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'Tableau des métriques',
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
@@ -33,47 +37,6 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-        backgroundColor: const Color.fromRGBO(243, 243, 243, 1),
-        appBar: AppBar(
-          title: Text(widget.title),
-        ),
-        body: Container(
-            padding: const EdgeInsets.all(20.0),
-            child: Row(
-              children: [
-                const Expanded(child: TaskList()),
-                const SizedBox(width: 30),
-                Expanded(
-                    child: Column(children: const [
-                  ColumnsNbTask(),
-                  SizedBox(height: 30),
-                  GraphNbTask()
-                ]))
-              ],
-            )));
-  }
-}
-
-class TaskList extends StatefulWidget {
-  const TaskList({super.key});
-
-  @override
-  State<TaskList> createState() => _TaskListState();
-}
-
-class _TaskListState extends State<TaskList> {
-  DateTimeRange? _selectedDateRange;
-
-  String dropdownvalue = 'drop1';
-  var items = ["drop1", "drop2", "drop3"];
-  List tasks = [];
-  var chipNames = ["Semaine", "Mois", "Max"];
-  var dateString = "sur toute la période";
-  int? selectedIndex = 2;
-
   void getProjectInfos() async {
     Uri graphQlUri = Uri.parse('https://api.github.com/graphql');
 
@@ -83,14 +46,38 @@ class _TaskListState extends State<TaskList> {
         },
         body: json.encode({
           "query":
-              "query{ node(id: \"PVT_kwHOBme_us4AKmxQ\") { ... on ProjectV2 { items(first: 20) { nodes { fieldValues(last: 1) { nodes { ... on ProjectV2ItemFieldSingleSelectValue { name } } } content { ... on DraftIssue { title body } ... on Issue { title assignees(first: 10) { nodes { login } } } ... on PullRequest { title assignees(first: 10) { nodes { login }}}}}}}}}"
+              "query{ node(id: \"PVT_kwHOBme_us4AKmxQ\") { ... on ProjectV2 { items(first: 20) { nodes { fieldValues(last: 1) { nodes { ... on ProjectV2ItemFieldSingleSelectValue { name createdAt } } } content { ... on DraftIssue { title body } ... on Issue { title assignees(first: 10) { nodes { login } } } ... on PullRequest { title assignees(first: 10) { nodes { name } } } } creator { login } } } } } }"
         }));
-
+    /*String response_body =
+        '{ "data": { "node": { "items": { "nodes": [ { "fieldValues": { "nodes": [ { "name": "Done ✅", "createdAt": "2023-01-13T15:06:52Z" } ] }, "content": { "title": "Test issue", "assignees": { "nodes": [] } }, "creator": { "login": "elblogbruno" } }, { "fieldValues": { "nodes": [ { "name": "Done ✅", "createdAt": "2023-01-13T15:22:56Z" } ] }, "content": { "title": "test modèle issue", "assignees": { "nodes": [] } }, "creator": { "login": "damiendesvent" } }, { "fieldValues": { "nodes": [ { "name": "In progress 🛠️", "createdAt": "2023-01-18T15:00:36Z" } ] }, "content": { "title": "[FEATURE] Création de l\'UI de visualisation des métriques", "assignees": { "nodes": [ { "login": "Dorian-Perthuis" } ] } }, "creator": { "login": "damiendesvent" } }, { "fieldValues": { "nodes": [ { "name": "In progress 🛠️", "createdAt": "2023-01-23T00:19:11Z" } ] }, "content": { "title": "[FEATURE] Création des requêtes d\'import des métriques", "assignees": { "nodes": [ { "login": "damiendesvent" } ] } }, "creator": { "login": "damiendesvent" } }, { "fieldValues": { "nodes": [ { "name": "In progress 🛠️", "createdAt": "2023-01-18T15:02:49Z" } ] }, "content": { "title": "[FEATURE] Création de la base de données", "assignees": { "nodes": [ { "login": "elblogbruno" } ] } }, "creator": { "login": "damiendesvent" } }, { "fieldValues": { "nodes": [ { "name": "To do ⏲️", "createdAt": "2023-01-18T14:54:34Z" } ] }, "content": { "title": "[FEATURE] Création de l\'API Rest", "assignees": { "nodes": [] } }, "creator": { "login": "damiendesvent" } }, { "fieldValues": { "nodes": [ { "name": "Review 👀", "createdAt": "2023-01-23T00:25:59Z" } ] }, "content": { "title": "feat: started flutter project", "assignees": { "nodes": [] } }, "creator": { "login": "damiendesvent" } } ] } } } }';
+    */
     if (response.body.isNotEmpty) {
       var items = json.decode(response.body);
+
       setState(() {
         tasks = items['data']['node']['items']['nodes'];
       });
+
+      //boucle permettant de remplir le tableau items avec les colonnes du kanban
+      for (var task in tasks) {
+        String status = task['fieldValues']['nodes'][0]['name'];
+        int indexStatus = -1;
+        for (var item in columns) {
+          indexStatus =
+              item['name'] == status ? columns.indexOf(item) : indexStatus;
+        }
+        if (indexStatus != -1) {
+          setState(() {
+            columns[indexStatus]['number'] += 1;
+          });
+        } else {
+          setState(() {
+            columns.add({'name': status, 'number': 1});
+          });
+        }
+      }
+      columns.sort((a, b) => b['number'].compareTo(
+          a['number'])); //tri du plus grand nombre de tâches au plus petit
     }
   }
 
@@ -98,6 +85,62 @@ class _TaskListState extends State<TaskList> {
   void initState() {
     super.initState();
     getProjectInfos();
+  }
+
+  @override
+  Widget build(BuildContext context) => FutureBuilder(
+      future: fetchData(),
+      builder: (context, snapshot) {
+        return Scaffold(
+            backgroundColor: const Color.fromRGBO(243, 243, 243, 1),
+            appBar: AppBar(
+              title: Text(widget.title),
+            ),
+            body: Container(
+                padding: const EdgeInsets.all(20.0),
+                child: snapshot.hasData && tasks.isNotEmpty
+                    ? Row(
+                        children: [
+                          const Expanded(child: TaskList()),
+                          const SizedBox(width: 30),
+                          Expanded(
+                              child: Column(children: const [
+                            ColumnsNbTask(),
+                            SizedBox(height: 30),
+                            GraphNbTask()
+                          ]))
+                        ],
+                      )
+                    : const Center(child: CircularProgressIndicator())));
+      });
+
+  Future<bool> fetchData() => Future.delayed(const Duration(seconds: 1), () {
+        return true;
+      });
+}
+
+class TaskList extends StatefulWidget {
+  const TaskList({super.key});
+
+  @override
+  State<StatefulWidget> createState() => _TaskListState();
+}
+
+class _TaskListState extends State<TaskList> {
+  DateTimeRange? _selectedDateRange;
+
+  List selectedTasks = [];
+  var dropdownvalue = columns.first['name'];
+  var chipNames = ["Semaine", "Mois", "Max"];
+  var dateString = "sur toute la période";
+  int? selectedIndex = 2;
+  List<Widget> cards = [];
+  bool init = true;
+
+  @override
+  void initState() {
+    super.initState();
+    updateSelectTasks(dropdownvalue);
   }
 
   void _show() async {
@@ -154,6 +197,17 @@ class _TaskListState extends State<TaskList> {
     textStyle: const TextStyle(fontSize: 20),
   );
 
+  void updateSelectTasks(var columnName) {
+    setState(() {
+      selectedTasks.clear();
+      for (var task in tasks) {
+        if (task['fieldValues']['nodes'][0]['name'] == columnName) {
+          selectedTasks.add(task);
+        }
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -173,14 +227,17 @@ class _TaskListState extends State<TaskList> {
                 width: 150.0,
                 child: DropdownButtonFormField(
                   value: dropdownvalue,
-                  items: items.map((String items) {
+                  items: columns.map((Map item) {
                     return DropdownMenuItem(
-                      value: items,
-                      child: Text(items),
+                      value: item['name'],
+                      child: Text(item['name']),
                     );
                   }).toList(),
-                  onChanged: (String? newValue) {
-                    setState(() => dropdownvalue = newValue!);
+                  onChanged: (var newValue) {
+                    setState(() {
+                      dropdownvalue = newValue;
+                      updateSelectTasks(dropdownvalue);
+                    });
                   },
                 ),
               ),
@@ -240,11 +297,12 @@ class _TaskListState extends State<TaskList> {
                     width: double.maxFinite,
                     padding: const EdgeInsets.all(15.0),
                     child: ListView.separated(
-                        itemBuilder: (task, index) => TaskCard(tasks[index]),
+                        itemBuilder: (task, index) =>
+                            TaskCard(selectedTasks[index]),
                         separatorBuilder: (_, index) {
                           return const SizedBox(height: 10);
                         },
-                        itemCount: tasks.length))))
+                        itemCount: selectedTasks.length))))
       ],
     );
   }
@@ -258,15 +316,6 @@ class ColumnsNbTask extends StatefulWidget {
 }
 
 class _ColumnsNbTask extends State<ColumnsNbTask> {
-  var items = [
-    {'name': 'item1', 'number': 5},
-    {'name': 'item2', 'number': 2},
-    {'name': 'item3', 'number': 10},
-    {'name': 'item4', 'number': 10},
-    {'name': 'item5', 'number': 10},
-    {'name': 'item6', 'number': 10}
-  ];
-
   @override
   Widget build(BuildContext context) {
     return Column(children: [
@@ -284,7 +333,7 @@ class _ColumnsNbTask extends State<ColumnsNbTask> {
       )),
       const SizedBox(height: 3.0),
       Row(
-        children: items.map((Map item) {
+        children: columns.map((Map item) {
           return Expanded(
               child: Card(
                   child: Center(
@@ -326,8 +375,7 @@ class GraphNbTask extends StatefulWidget {
 class _GraphNbTask extends State<GraphNbTask> {
   DateTimeRange? _selectedDateRange;
 
-  String dropdownvalue = 'drop1';
-  var items = ["drop1", "drop2", "drop3"];
+  var dropdownvalue = columns.first['name'];
   var chipNames = ["Semaine", "Mois", "Max"];
   var dateString = "sur toute la période";
   var nbTacheDone = 50;
@@ -407,14 +455,14 @@ class _GraphNbTask extends State<GraphNbTask> {
                       width: 150.0,
                       child: DropdownButtonFormField(
                         value: dropdownvalue,
-                        items: items.map((String items) {
+                        items: columns.map((Map item) {
                           return DropdownMenuItem(
-                            value: items,
-                            child: Text(items),
+                            value: item['name'],
+                            child: Text(item['name']),
                           );
                         }).toList(),
-                        onChanged: (String? newValue) {
-                          setState(() => dropdownvalue = newValue!);
+                        onChanged: (var newValue) {
+                          setState(() => dropdownvalue = newValue);
                         },
                       ),
                     ),
@@ -498,16 +546,28 @@ class _GraphNbTask extends State<GraphNbTask> {
 class TaskCard extends StatelessWidget {
   TaskCard(this.task, {super.key});
 
-  final Map task;
-  var chipNames = ['chip1', 'chip2'];
+  Map task;
+
+  var chipNames = [];
   String taskName = "";
   String status = "";
-  var creatorName = "Jean dupond";
+  String assigneeName = "";
+  String creatorName = "";
+  String createdAt = "";
 
   @override
   Widget build(BuildContext context) {
     taskName = task['content']['title'];
     status = task['fieldValues']['nodes'][0]['name'];
+    assigneeName = task['content']['assignees']['nodes'].isEmpty
+        ? ""
+        : task['content']['assignees']['nodes'][0]['login'];
+    if (assigneeName.isNotEmpty && !chipNames.contains(assigneeName)) {
+      chipNames.add(assigneeName);
+    }
+    creatorName = task['creator']['login'];
+    createdAt = task['fieldValues']['nodes'][0]['createdAt'].substring(
+        0, task['fieldValues']['nodes'][0]['createdAt'].indexOf('T'));
     return Container(
         padding: const EdgeInsets.all(15.0),
         decoration: BoxDecoration(
@@ -528,7 +588,7 @@ class TaskCard extends StatelessWidget {
             Container(
                 padding: const EdgeInsets.fromLTRB(0, 5, 0, 15),
                 child: Text(
-                  "Créer par $creatorName le __/__/____",
+                  "Créé par $creatorName le $createdAt",
                   style: const TextStyle(fontSize: 12, color: Colors.blueGrey),
                 )),
             Container()
