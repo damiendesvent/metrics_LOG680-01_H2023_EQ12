@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/task_card.dart';
 
+import 'api.dart';
 import 'main.dart';
 
 class TaskList extends StatefulWidget {
@@ -33,8 +34,7 @@ class _TaskListState extends State<TaskList> {
         context: context,
         firstDate: DateTime(2020, 1, 1),
         lastDate: DateTime(2030, 12, 31),
-        initialDateRange:
-        DateTimeRange(start: DateTime(2020, 1, 1), end: DateTime.now()),
+        initialDateRange: DateTimeRange(start: DateTime(2020, 1, 1), end: DateTime.now()),
         currentDate: DateTime.now(),
         saveText: 'Done',
         initialEntryMode: DatePickerEntryMode.inputOnly);
@@ -45,6 +45,7 @@ class _TaskListState extends State<TaskList> {
         _selectedDateRange = result;
       });
     }
+
     _dateString(_selectedDateRange?.start, _selectedDateRange?.end, "Specific");
     selectedIndex = null;
   }
@@ -60,12 +61,14 @@ class _TaskListState extends State<TaskList> {
         {
           dateString =
           "du ${DateTime.now().subtract(const Duration(days: 31)).toString().split(' ')[0]} au ${DateTime.now().toString().split(' ')[0]}";
+          _selectedDateRange = DateTimeRange(start: DateTime.now().subtract(const Duration(days: 31)), end: DateTime.now());
         }
         break;
       case "Semaine":
         {
           dateString =
           "du ${DateTime.now().subtract(const Duration(days: 7)).toString().split(' ')[0]} au ${DateTime.now().toString().split(' ')[0]}";
+          _selectedDateRange = DateTimeRange(start: DateTime.now().subtract(const Duration(days: 7)), end: DateTime.now());
         }
         break;
       case "Specific":
@@ -73,6 +76,7 @@ class _TaskListState extends State<TaskList> {
           String startDate = startDt.toString().split(' ')[0];
           String endDate = endDt.toString().split(' ')[0];
           dateString = "du $startDate au $endDate";
+          _selectedDateRange = DateTimeRange(start: DateTime.parse(startDate), end: DateTime.parse(endDate));
         }
         break;
     }
@@ -82,7 +86,22 @@ class _TaskListState extends State<TaskList> {
     textStyle: const TextStyle(fontSize: 20),
   );
 
-  void updateSelectTasks(var columnName) {
+  void updateSelectTasks(var columnName)
+  {
+    // TODO: contact api to get tasks with column name
+    print("updateSelectTasks: " + columnName);
+
+    // get cards by column name and date range
+    print(_selectedDateRange);
+    cards = [];
+    if (_selectedDateRange != null)
+    {
+      Api().getCardsByColumnAndTimeRange(columnName, _selectedDateRange!).then((
+          value) {
+        print("value: " + value);
+      });
+    }
+
     setState(() {
       selectedTasks.clear();
       for (var task in tasks) {
@@ -157,6 +176,7 @@ class _TaskListState extends State<TaskList> {
                                             _selectedDateRange?.end,
                                             chipNames[index]);
                                         selectedIndex = index;
+                                        updateSelectTasks(dropdownvalue);
                                       }
                                     });
                                   });
