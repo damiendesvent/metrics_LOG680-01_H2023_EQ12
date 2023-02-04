@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 
 class TaskCard extends StatelessWidget {
-  TaskCard(this.task, {super.key});
+  TaskCard(this.task, this.customCard, {super.key});
 
   Map task;
+  bool customCard = false; // if true, json is different than orignial github json as it comes from our api
 
   var chipNames = [];
   String taskName = "";

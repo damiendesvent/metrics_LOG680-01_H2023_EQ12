@@ -44,6 +44,8 @@ class _TaskListState extends State<TaskList> {
       setState(() {
         _selectedDateRange = result;
       });
+
+      updateSelectTasks(dropdownvalue);
     }
 
     _dateString(_selectedDateRange?.start, _selectedDateRange?.end, "Specific");
@@ -96,10 +98,10 @@ class _TaskListState extends State<TaskList> {
     cards = [];
     if (_selectedDateRange != null)
     {
-      Api().getCardsByColumnAndTimeRange(columnName, _selectedDateRange!).then((
-          value) {
-        print("value: " + value);
-      });
+        Api().getCardsByColumnAndTimeRange(columnName, _selectedDateRange!).then((
+            value) {
+          print("value: " + value);
+        });
     }
 
     setState(() {
@@ -203,7 +205,7 @@ class _TaskListState extends State<TaskList> {
                     padding: const EdgeInsets.all(15.0),
                     child: ListView.separated(
                         itemBuilder: (task, index) =>
-                            TaskCard(selectedTasks[index]),
+                            TaskCard(selectedTasks[index], selectedTasks[index].toString().contains('nodes')),
                         separatorBuilder: (_, index) {
                           return const SizedBox(height: 10);
                         },
