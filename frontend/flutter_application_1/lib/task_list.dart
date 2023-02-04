@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/task_card.dart';
@@ -57,20 +59,22 @@ class _TaskListState extends State<TaskList> {
       case "Max":
         {
           dateString = "sur toute la période";
+          _selectedDateRange = DateTimeRange(start: DateTime(2020, 1, 1), end: DateTime.now());
         }
         break;
       case "Mois":
         {
           dateString =
           "du ${DateTime.now().subtract(const Duration(days: 31)).toString().split(' ')[0]} au ${DateTime.now().toString().split(' ')[0]}";
-          _selectedDateRange = DateTimeRange(start: DateTime.now().subtract(const Duration(days: 31)), end: DateTime.now());
+          _selectedDateRange = DateTimeRange(start: DateTime.now().subtract(const Duration(days: 31)), end: DateTime.now().add(const Duration(days: 1)));
         }
         break;
       case "Semaine":
         {
           dateString =
           "du ${DateTime.now().subtract(const Duration(days: 7)).toString().split(' ')[0]} au ${DateTime.now().toString().split(' ')[0]}";
-          _selectedDateRange = DateTimeRange(start: DateTime.now().subtract(const Duration(days: 7)), end: DateTime.now());
+
+          _selectedDateRange = DateTimeRange(start: DateTime.now().subtract(const Duration(days: 7)), end: DateTime.now().add(const Duration(days: 1)));
         }
         break;
       case "Specific":
@@ -95,23 +99,37 @@ class _TaskListState extends State<TaskList> {
 
     // get cards by column name and date range
     print(_selectedDateRange);
-    cards = [];
     if (_selectedDateRange != null)
     {
         Api().getCardsByColumnAndTimeRange(columnName, _selectedDateRange!).then((
             value) {
-          print("value: " + value);
-        });
-    }
+          //print("value: $value");
 
-    setState(() {
-      selectedTasks.clear();
-      for (var task in tasks) {
-        if (task['fieldValues']['nodes'][0]['name'] == columnName) {
-          selectedTasks.add(task);
+          // parse string to json
+          dynamic x2 = jsonDecode(value);
+
+          selectedTasks.clear();
+
+          print("x2: $x2");
+
+          setState(() {
+            // add cards to list
+            for (var i = 0; i < x2['cards'].length; i++) {
+              selectedTasks.add(x2['cards'][i]);
+            }
+          });
+
+        });
+    }else {
+      setState(() {
+        selectedTasks.clear();
+        for (var task in tasks) {
+          if (task['fieldValues']['nodes'][0]['name'] == columnName) {
+            selectedTasks.add(task);
+          }
         }
-      }
-    });
+      });
+    }
   }
 
   @override

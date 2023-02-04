@@ -15,17 +15,32 @@ class TaskCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    taskName = task['content']['title'];
-    status = task['fieldValues']['nodes'][0]['name'];
-    assigneeName = task['content']['assignees']['nodes'].isEmpty
-        ? ""
-        : task['content']['assignees']['nodes'][0]['login'];
-    if (assigneeName.isNotEmpty && !chipNames.contains(assigneeName)) {
-      chipNames.add(assigneeName);
+    if (!customCard) {
+      taskName = task['content']['title'];
+      status = task['fieldValues']['nodes'][0]['name'];
+      assigneeName = task['content']['assignees']['nodes'].isEmpty
+          ? ""
+          : task['content']['assignees']['nodes'][0]['login'];
+      if (assigneeName.isNotEmpty && !chipNames.contains(assigneeName)) {
+        chipNames.add(assigneeName);
+      }
+      creatorName = task['creator']['login'];
+      createdAt = task['fieldValues']['nodes'][0]['createdAt'].substring(
+          0, task['fieldValues']['nodes'][0]['createdAt'].indexOf('T'));
     }
-    creatorName = task['creator']['login'];
-    createdAt = task['fieldValues']['nodes'][0]['createdAt'].substring(
-        0, task['fieldValues']['nodes'][0]['createdAt'].indexOf('T'));
+    else
+    {
+        // TODO: fix api to return same json as original github json
+        taskName = task['title'];
+        status = task['status'];
+        assigneeName = task['assignee'];
+        if (assigneeName.isNotEmpty && !chipNames.contains(assigneeName)) {
+          chipNames.add(assigneeName);
+        }
+        creatorName = task['creator'];
+        createdAt = task['createdAt'].substring(0, task['createdAt'].indexOf('T'));
+    }
+
     return Container(
         padding: const EdgeInsets.all(15.0),
         decoration: BoxDecoration(
