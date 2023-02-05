@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/task_card.dart';
@@ -23,6 +25,8 @@ class _TaskListState extends State<TaskList> {
   List<Widget> cards = [];
   bool init = true;
 
+  bool isCustomCard = false;
+
   @override
   void initState() {
     super.initState();
@@ -45,6 +49,8 @@ class _TaskListState extends State<TaskList> {
       setState(() {
         _selectedDateRange = result;
       });
+
+      updateSelectTasks(dropdownvalue);
     }
 
     _dateString(_selectedDateRange?.start, _selectedDateRange?.end, "Specific");
@@ -63,19 +69,16 @@ class _TaskListState extends State<TaskList> {
       case "Mois":
         {
           dateString =
-              "du ${DateTime.now().subtract(const Duration(days: 31)).toString().split(' ')[0]} au ${DateTime.now().toString().split(' ')[0]}";
-          _selectedDateRange = DateTimeRange(
-              start: DateTime.now().subtract(const Duration(days: 31)),
-              end: DateTime.now());
+          "du ${DateTime.now().subtract(const Duration(days: 31)).toString().split(' ')[0]} au ${DateTime.now().toString().split(' ')[0]}";
+          _selectedDateRange = DateTimeRange(start: DateTime.now().subtract(const Duration(days: 31)), end: DateTime.now().add(const Duration(days: 1)));
         }
         break;
       case "Semaine":
         {
           dateString =
-              "du ${DateTime.now().subtract(const Duration(days: 7)).toString().split(' ')[0]} au ${DateTime.now().toString().split(' ')[0]}";
-          _selectedDateRange = DateTimeRange(
-              start: DateTime.now().subtract(const Duration(days: 7)),
-              end: DateTime.now());
+          "du ${DateTime.now().subtract(const Duration(days: 7)).toString().split(' ')[0]} au ${DateTime.now().toString().split(' ')[0]}";
+
+          _selectedDateRange = DateTimeRange(start: DateTime.now().subtract(const Duration(days: 7)), end: DateTime.now().add(const Duration(days: 1)));
         }
         break;
       case "Specific":
@@ -100,30 +103,41 @@ class _TaskListState extends State<TaskList> {
     print("updateSelectTasks: " + columnName);
 
     // get cards by column name and date range
-    cards = [];
-    if (_selectedDateRange != null) {
-      Api()
-          .getCardsByColumnAndTimeRange(columnName, _selectedDateRange!)
-          .then((value) {
-        print("value: " + value);
+    print(_selectedDateRange);
+    if (_selectedDateRange != null)
+    {
+        Api().getCardsByColumnAndTimeRange(columnName, _selectedDateRange!).then((
+            value) {
+          //print("value: $value");
+
+          // parse string to json
+          dynamic x2 = jsonDecode(value);
+          print("x2: $x2");
+
+          selectedTasks.clear();
+          // add cards to list
+          for (var i = 0; i < x2['cards'].length; i++) {
+            selectedTasks.add(x2['cards'][i]);
+          }
+          print("selectedTasks: $selectedTasks");
+
+          setState(() {
+
+            isCustomCard = true;
+          });
+
+        });
+    }else {
+      setState(() {
+        selectedTasks.clear();
+        for (var task in tasks) {
+          if (task['fieldValues']['nodes'][0]['name'] == columnName) {
+            selectedTasks.add(task);
+          }
+        }
+        isCustomCard = false;
       });
     }
-
-    setState(() {
-      selectedTasks.clear();
-      for (var task in tasks) {
-        DateTime dateCreation = DateTime.parse(
-            task['fieldValues']['nodes'][0]['createdAt'].replaceAll('T', ' '));
-        bool isGoodDate = dateCreation
-                .isBefore(_selectedDateRange?.end ?? DateTime(2030, 12, 30)) &&
-            dateCreation
-                .isAfter(_selectedDateRange?.start ?? DateTime(2020, 01, 01));
-        if (task['fieldValues']['nodes'][0]['name'] == columnName &&
-            isGoodDate) {
-          selectedTasks.add(task);
-        }
-      }
-    });
   }
 
   @override
@@ -209,6 +223,9 @@ class _TaskListState extends State<TaskList> {
                           )))))
         ]),
         const SizedBox(height: 3),
+        if (selectedTasks.isEmpty)
+          Expanded(child: Center(child: const Text("Aucune tâche")))
+        else
         Expanded(
             child: Card(
                 child: Container(
@@ -216,7 +233,7 @@ class _TaskListState extends State<TaskList> {
                     padding: const EdgeInsets.all(15.0),
                     child: ListView.separated(
                         itemBuilder: (task, index) =>
-                            TaskCard(selectedTasks[index]),
+                            TaskCard(selectedTasks[index], isCustomCard),
                         separatorBuilder: (_, index) {
                           return const SizedBox(height: 10);
                         },
