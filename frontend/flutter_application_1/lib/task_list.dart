@@ -25,6 +25,8 @@ class _TaskListState extends State<TaskList> {
   List<Widget> cards = [];
   bool init = true;
 
+  bool isCustomCard = false;
+
   @override
   void initState() {
     super.initState();
@@ -107,16 +109,18 @@ class _TaskListState extends State<TaskList> {
 
           // parse string to json
           dynamic x2 = jsonDecode(value);
-
-          selectedTasks.clear();
-
           print("x2: $x2");
 
+          selectedTasks.clear();
+          // add cards to list
+          for (var i = 0; i < x2['cards'].length; i++) {
+            selectedTasks.add(x2['cards'][i]);
+          }
+          print("selectedTasks: $selectedTasks");
+
           setState(() {
-            // add cards to list
-            for (var i = 0; i < x2['cards'].length; i++) {
-              selectedTasks.add(x2['cards'][i]);
-            }
+
+            isCustomCard = true;
           });
 
         });
@@ -128,6 +132,7 @@ class _TaskListState extends State<TaskList> {
             selectedTasks.add(task);
           }
         }
+        isCustomCard = false;
       });
     }
   }
@@ -216,6 +221,9 @@ class _TaskListState extends State<TaskList> {
                           )))))
         ]),
         const SizedBox(height: 3),
+        if (selectedTasks.isEmpty)
+          Expanded(child: Center(child: const Text("Aucune tâche")))
+        else
         Expanded(
             child: Card(
                 child: Container(
@@ -223,7 +231,7 @@ class _TaskListState extends State<TaskList> {
                     padding: const EdgeInsets.all(15.0),
                     child: ListView.separated(
                         itemBuilder: (task, index) =>
-                            TaskCard(selectedTasks[index], selectedTasks[index].toString().contains('nodes')),
+                            TaskCard(selectedTasks[index], isCustomCard),
                         separatorBuilder: (_, index) {
                           return const SizedBox(height: 10);
                         },

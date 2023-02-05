@@ -13,6 +13,8 @@ class TaskCard extends StatelessWidget {
   String creatorName = "";
   String createdAt = "";
 
+  String leadTime = "No data";
+
   @override
   Widget build(BuildContext context) {
     if (!customCard) {
@@ -31,14 +33,39 @@ class TaskCard extends StatelessWidget {
     else
     {
         // TODO: fix api to return same json as original github json
-        taskName = task['title'];
-        status = task['status'];
-        assigneeName = task['assignee'];
+        taskName = task['name'];
+
+        if (task['type_name'] == 'Issue')
+        {
+          status = task['state'];
+        } else {
+          status = task['pull_state'];
+        }
+
+        // parse assignee as a python list []
+        String assignee = task['assignees'];
+        assignee = assignee.substring(1, assignee.length - 1);
+        List<String> assigneeList = assignee.split(',');
+        assigneeName = assigneeList[0];
+
         if (assigneeName.isNotEmpty && !chipNames.contains(assigneeName)) {
           chipNames.add(assigneeName);
         }
-        creatorName = task['creator'];
-        createdAt = task['createdAt'].substring(0, task['createdAt'].indexOf('T'));
+
+        creatorName = task['creator']; //TODO: Need to add creator field to api
+        createdAt = task['created_at'].substring(0, task['created_at'].indexOf('T'));
+
+        double leadTimeSeconds = task['lead_time'];
+
+        if (leadTimeSeconds > 0)
+        {
+          int days = (leadTimeSeconds / 86400).floor();
+          int hours = ((leadTimeSeconds % 86400) / 3600).floor();
+          int minutes = (((leadTimeSeconds % 86400) % 3600) / 60).floor();
+          int seconds = (((leadTimeSeconds % 86400) % 3600) % 60).floor();
+
+          leadTime = "$days days, $hours hours, $minutes minutes, $seconds seconds";
+        }
     }
 
     return Container(
@@ -89,9 +116,9 @@ class TaskCard extends StatelessWidget {
                             const BorderRadius.all(Radius.circular(50)),
                             side: BorderSide(
                                 color: Colors.grey.shade600, width: 1)),
-                        label: const Text(
-                          "5d:5h",
-                          style: TextStyle(fontWeight: FontWeight.w600),
+                        label:  Text(
+                          leadTime,
+                          style: const TextStyle(fontWeight: FontWeight.w600),
                         ))))
           ])
         ]));
