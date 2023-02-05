@@ -80,6 +80,7 @@ class Card(BaseModel):
     state = Column(Text, default="no-state")
     pull_state = Column(Text, default=None) # onli if the card is a pull request, it is the state of the pull request
     type_name = Column(String(255), default="Issue") # the type of the card, it can be "Issue" or "PullRequest"
+    creator = Column(String(255), default="") # the creator of the card
 
     def save(self, db):
         db.add(self)

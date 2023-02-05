@@ -16,6 +16,7 @@ class Base(BaseModel):
 
 class Card(Base):
     type_name: str # the type of the card, it can be "Issue" or "PullRequest"
+    creator: str # the creator of the card
     content: str
     column_id: str
     parent_card_id: str

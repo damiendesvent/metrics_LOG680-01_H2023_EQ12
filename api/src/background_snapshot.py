@@ -143,6 +143,7 @@ class Worker:
                 state = card_json['state'] if 'state' in card_json else None,
                 pull_state = card_json['pullState'] if 'pullState' in card_json else None,
                 type_name = card_json['__typename'], # this is to know if the card is a pull request or an issue
+                creator = card_json['author']['login'] if 'author' in card_json else None,
             )
 
             self.check_card_closed(card_json, card_schema) # if the card is closed we calculate the lead time
@@ -168,6 +169,7 @@ class Worker:
                 state = card_json['state'] if 'state' in card_json else None,
                 pull_state = card_json['pullState'] if 'pullState' in card_json else None,
                 type_name = card.type_name,
+                creator = card_json['author']['login'] if 'author' in card_json else None,
             )
 
             # update the old card with the new column id
