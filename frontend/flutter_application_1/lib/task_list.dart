@@ -87,6 +87,12 @@ class _TaskListState extends State<TaskList> {
           _selectedDateRange = DateTimeRange(start: DateTime.parse(startDate), end: DateTime.parse(endDate));
         }
         break;
+      case "Reset":
+        {
+          dateString = "info directe de github";
+          _selectedDateRange = null;
+        }
+        break;
     }
   }
 
@@ -103,27 +109,27 @@ class _TaskListState extends State<TaskList> {
     print(_selectedDateRange);
     if (_selectedDateRange != null)
     {
-        Api().getCardsByColumnAndTimeRange(columnName, _selectedDateRange!).then((
-            value) {
-          //print("value: $value");
+      Api().getCardsByColumnAndTimeRange(columnName, _selectedDateRange!).then((
+          value) {
+        //print("value: $value");
 
-          // parse string to json
-          dynamic x2 = jsonDecode(value);
-          print("x2: $x2");
+        // parse string to json
+        dynamic x2 = jsonDecode(value);
+        print("x2: $x2");
 
-          selectedTasks.clear();
-          // add cards to list
-          for (var i = 0; i < x2['cards'].length; i++) {
-            selectedTasks.add(x2['cards'][i]);
-          }
-          print("selectedTasks: $selectedTasks");
+        selectedTasks.clear();
+        // add cards to list
+        for (var i = 0; i < x2['cards'].length; i++) {
+          selectedTasks.add(x2['cards'][i]);
+        }
+        print("selectedTasks: $selectedTasks");
 
-          setState(() {
+        setState(() {
 
-            isCustomCard = true;
-          });
-
+          isCustomCard = true;
         });
+
+      });
     }else {
       setState(() {
         selectedTasks.clear();
@@ -134,6 +140,34 @@ class _TaskListState extends State<TaskList> {
         }
         isCustomCard = false;
       });
+    }
+  }
+
+  String getAverageLeadTime(List tasks)
+  {
+    if (tasks.isEmpty || !isCustomCard) {
+      return "0";
+    }
+
+    double sum = 0;
+    for (var task in tasks)
+    {
+      sum += task['lead_time'];
+    }
+
+    double leadTimeAverage = sum / tasks.length;
+
+    if (leadTimeAverage > 0) {
+      int days = (leadTimeAverage / 86400).floor();
+      int hours = ((leadTimeAverage % 86400) / 3600).floor();
+      int minutes = (((leadTimeAverage % 86400) % 3600) / 60).floor();
+      int seconds = (((leadTimeAverage % 86400) % 3600) % 60).floor();
+
+
+      return "${days}d:${hours}h:${minutes}m";
+    }
+    else {
+      return "0";
     }
   }
 
@@ -188,7 +222,7 @@ class _TaskListState extends State<TaskList> {
                       padding: const EdgeInsets.all(15.0),
                       child: Wrap(
                         spacing: 15,
-                        children: List<Widget>.generate(chipNames.length,
+                        children:  List<Widget>.generate(chipNames.length,
                                 (int index) {
                               return InputChip(
                                   label: Text(chipNames[index]),
@@ -206,36 +240,68 @@ class _TaskListState extends State<TaskList> {
                                     });
                                   });
                             }),
-                      )))),
+                      ))
+
+              )),
           Card(
               child: Container(
-                  padding: const EdgeInsets.all(15.0),
-                  child: Tooltip(
-                      message: "Lead time moyen",
-                      child: Chip(
-                          avatar: const Icon(Icons.access_time_rounded),
-                          backgroundColor: Colors.blue.shade100,
-                          label: const Text(
-                            "5d:5h",
-                            style: TextStyle(fontWeight: FontWeight.w600),
-                          )))))
+                padding: const EdgeInsets.all(15.0),
+                child: ElevatedButton(
+                  onPressed: () {
+                    _dateString(
+                        _selectedDateRange?.start,
+                        _selectedDateRange?.end,
+                        "Reset");
+                    updateSelectTasks(dropdownvalue);
+                  },
+                  child: const Text('Reset'),
+                ),
+              )),
+
+          if (selectedTasks.isNotEmpty && getAverageLeadTime(selectedTasks) != "0")
+            Card(
+                child: Container(
+                    padding: const EdgeInsets.all(15.0),
+                    child: Tooltip(
+                        message: "Lead time moyen",
+                        child: Chip(
+                            avatar: const Icon(Icons.access_time_rounded),
+                            backgroundColor: Colors.blue.shade100,
+                            label:  Text(
+                              getAverageLeadTime(selectedTasks),//"5d:5h",
+                              style: TextStyle(fontWeight: FontWeight.w600),
+                            )))))
+          else
+            Card(
+                child: Container(
+                    padding: const EdgeInsets.all(15.0),
+                    child: Tooltip(
+                        message: "Lead time moyen",
+                        child: Chip(
+                            avatar: const Icon(Icons.access_time_rounded),
+                            backgroundColor: Colors.blue.shade100,
+                            label:  Text(
+                              "Aucune Donnée",//"5d:5h",
+                              style: TextStyle(fontWeight: FontWeight.w600),
+                            )))))
+
         ]),
         const SizedBox(height: 3),
         if (selectedTasks.isEmpty)
-          Expanded(child: Center(child: const Text("Aucune tâche")))
+          const Expanded(child: Center(child: Text("Aucune tâche")))
         else
-        Expanded(
-            child: Card(
-                child: Container(
-                    width: double.maxFinite,
-                    padding: const EdgeInsets.all(15.0),
-                    child: ListView.separated(
-                        itemBuilder: (task, index) =>
-                            TaskCard(selectedTasks[index], isCustomCard),
-                        separatorBuilder: (_, index) {
-                          return const SizedBox(height: 10);
-                        },
-                        itemCount: selectedTasks.length))))
+          Expanded(
+              child: Card(
+                  child: Container(
+                      width: double.maxFinite,
+                      padding: const EdgeInsets.all(15.0),
+                      child: ListView.separated(
+                          itemBuilder: (task, index) =>
+                              TaskCard(selectedTasks[index], isCustomCard),
+                          separatorBuilder: (_, index) {
+                            return const SizedBox(height: 10);
+                          },
+                          itemCount: selectedTasks.length))))
       ],
     );
   }

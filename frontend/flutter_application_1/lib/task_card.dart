@@ -12,8 +12,9 @@ class TaskCard extends StatelessWidget {
   String assigneeName = "";
   String creatorName = "";
   String createdAt = "";
+  String taskType = "";
 
-  String leadTime = "No data";
+  String leadTime = "Aucune Donnée";
 
   @override
   Widget build(BuildContext context) {
@@ -29,6 +30,7 @@ class TaskCard extends StatelessWidget {
       creatorName = task['creator']['login'];
       createdAt = task['fieldValues']['nodes'][0]['createdAt'].substring(
           0, task['fieldValues']['nodes'][0]['createdAt'].indexOf('T'));
+
     }
     else
     {
@@ -66,6 +68,8 @@ class TaskCard extends StatelessWidget {
 
           leadTime = "${days}d:${hours}h:${minutes}m";
         }
+
+        taskType = "- " +  task['type_name'];
     }
 
     return Container(
@@ -82,7 +86,7 @@ class TaskCard extends StatelessWidget {
               taskName,
               style: const TextStyle(fontWeight: FontWeight.w900),
             ),
-            Container(alignment: Alignment.centerRight, child: Text(status))
+            Container(alignment: Alignment.centerRight, child: Text("$status $taskType"))
           ]),
           TableRow(children: [
             Container(
