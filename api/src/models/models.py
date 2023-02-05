@@ -76,6 +76,10 @@ class Card(BaseModel):
     closed_at = Column(DateTime, default=None) # when the card was closed if it was closed (None if it was not closed)
     lead_time = Column(Float, default=0) # time between the creation of the card and the upload of the card to the column 
     labels = Column(Text, default="[]")
+    assignees = Column(Text, default="[]")
+    state = Column(Text, default="no-state")
+    pull_state = Column(Text, default=None) # onli if the card is a pull request, it is the state of the pull request
+    type_name = Column(String(255), default="Issue") # the type of the card, it can be "Issue" or "PullRequest"
 
     def save(self, db):
         db.add(self)

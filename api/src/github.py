@@ -72,6 +72,7 @@ class GithubClient:
                             nodes {
                                 content {
                                     ... on Issue {
+                                        __typename
                                         id
                                         title
                                         bodyText
@@ -88,8 +89,15 @@ class GithubClient:
                                             name
                                           }
                                         }
+                                        assignees(first: 10) {
+                                          nodes {
+                                            name
+                                            login
+                                          }
+                                        }
                                     }
                                     ... on PullRequest {
+                                        __typename
                                         id
                                         title
                                         bodyText
@@ -105,6 +113,15 @@ class GithubClient:
                                             name
                                           }
                                         }
+                                        assignees(first: 10) {
+                                          nodes {
+                                            name
+                                            login
+                                          }
+                                        }
+
+                                        pullState: state
+                                         
                                     }
                                 }
                                 status: fieldValueByName(name: "Status") {

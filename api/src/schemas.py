@@ -15,6 +15,7 @@ class Base(BaseModel):
         orm_mode = True
 
 class Card(Base):
+    type_name: str # the type of the card, it can be "Issue" or "PullRequest"
     content: str
     column_id: str
     parent_card_id: str
@@ -25,6 +26,10 @@ class Card(Base):
     closed_at: Union[datetime, None] # when the card was closed if it was closed (None if it was not closed)
 
     labels = str # json string of the labels  it is like this "[]"
+    assignees = str # json string of the assignees it is like this "[]"
+    state = str # json string of the status it is like this "[]"
+
+    pull_state = str # onli if the card is a pull request, it is the state of the pull request
 
     class Config:
         orm_mode = True

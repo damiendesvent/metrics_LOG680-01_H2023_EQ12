@@ -117,6 +117,12 @@ class Worker:
         else:
             labels = []
 
+        assignees = card_json['assignees']['nodes']
+        if assignees:
+            assignees = [assignee['login'] for assignee in assignees]
+        else:
+            assignees = []
+
         if card is None: # if the card does not exist we create it and add it to the column
             logging.info("Card does not exist, creating it")
             
@@ -133,6 +139,10 @@ class Worker:
                 closed = card_json['closed'],
                 lead_time = None,
                 labels = str(labels),
+                assignees = str(assignees),
+                state = card_json['state'] if 'state' in card_json else None,
+                pull_state = card_json['pullState'] if 'pullState' in card_json else None,
+                type_name = card_json['__typename'], # this is to know if the card is a pull request or an issue
             )
 
             self.check_card_closed(card_json, card_schema) # if the card is closed we calculate the lead time
@@ -154,6 +164,10 @@ class Worker:
                 closed = False,
                 lead_time = None,
                 labels = str(labels),
+                assignees = str(assignees),
+                state = card_json['state'] if 'state' in card_json else None,
+                pull_state = card_json['pullState'] if 'pullState' in card_json else None,
+                type_name = card.type_name,
             )
 
             # update the old card with the new column id
@@ -162,6 +176,9 @@ class Worker:
             card.closed = card_json['closed'] # if the card is closed we update the closed field
             card.closed_at = card_json['closedAt'] # if the card is closed we update the closed at field
             card.labels = card_json['labels']['nodes'] # if the card has labels we update the labels field
+            card.assignees = str(assignees) # if the card has assignees we update the assignees field
+            card.state = card_json['state'] # if the card has state we update the state field
+            card.pull_state = card_json['pullState'] if 'pullState' in card_json else None, # if the card has pull state we update the pull state field
             
             self.check_card_closed(card_json, card) # if the card is closed we calculate the lead time
 
