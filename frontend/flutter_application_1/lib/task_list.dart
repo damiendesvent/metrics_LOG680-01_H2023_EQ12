@@ -34,7 +34,8 @@ class _TaskListState extends State<TaskList> {
         context: context,
         firstDate: DateTime(2020, 1, 1),
         lastDate: DateTime(2030, 12, 31),
-        initialDateRange: DateTimeRange(start: DateTime(2020, 1, 1), end: DateTime.now()),
+        initialDateRange:
+            DateTimeRange(start: DateTime(2020, 1, 1), end: DateTime.now()),
         currentDate: DateTime.now(),
         saveText: 'Done',
         initialEntryMode: DatePickerEntryMode.inputOnly);
@@ -55,20 +56,26 @@ class _TaskListState extends State<TaskList> {
       case "Max":
         {
           dateString = "sur toute la période";
+          _selectedDateRange =
+              DateTimeRange(start: DateTime(2020, 01, 01), end: DateTime.now());
         }
         break;
       case "Mois":
         {
           dateString =
-          "du ${DateTime.now().subtract(const Duration(days: 31)).toString().split(' ')[0]} au ${DateTime.now().toString().split(' ')[0]}";
-          _selectedDateRange = DateTimeRange(start: DateTime.now().subtract(const Duration(days: 31)), end: DateTime.now());
+              "du ${DateTime.now().subtract(const Duration(days: 31)).toString().split(' ')[0]} au ${DateTime.now().toString().split(' ')[0]}";
+          _selectedDateRange = DateTimeRange(
+              start: DateTime.now().subtract(const Duration(days: 31)),
+              end: DateTime.now());
         }
         break;
       case "Semaine":
         {
           dateString =
-          "du ${DateTime.now().subtract(const Duration(days: 7)).toString().split(' ')[0]} au ${DateTime.now().toString().split(' ')[0]}";
-          _selectedDateRange = DateTimeRange(start: DateTime.now().subtract(const Duration(days: 7)), end: DateTime.now());
+              "du ${DateTime.now().subtract(const Duration(days: 7)).toString().split(' ')[0]} au ${DateTime.now().toString().split(' ')[0]}";
+          _selectedDateRange = DateTimeRange(
+              start: DateTime.now().subtract(const Duration(days: 7)),
+              end: DateTime.now());
         }
         break;
       case "Specific":
@@ -76,28 +83,28 @@ class _TaskListState extends State<TaskList> {
           String startDate = startDt.toString().split(' ')[0];
           String endDate = endDt.toString().split(' ')[0];
           dateString = "du $startDate au $endDate";
-          _selectedDateRange = DateTimeRange(start: DateTime.parse(startDate), end: DateTime.parse(endDate));
+          _selectedDateRange = DateTimeRange(
+              start: DateTime.parse(startDate), end: DateTime.parse(endDate));
         }
         break;
     }
+    updateSelectTasks(dropdownvalue);
   }
 
   final ButtonStyle style = ElevatedButton.styleFrom(
     textStyle: const TextStyle(fontSize: 20),
   );
 
-  void updateSelectTasks(var columnName)
-  {
+  void updateSelectTasks(var columnName) {
     // TODO: contact api to get tasks with column name
     print("updateSelectTasks: " + columnName);
 
     // get cards by column name and date range
-    print(_selectedDateRange);
     cards = [];
-    if (_selectedDateRange != null)
-    {
-      Api().getCardsByColumnAndTimeRange(columnName, _selectedDateRange!).then((
-          value) {
+    if (_selectedDateRange != null) {
+      Api()
+          .getCardsByColumnAndTimeRange(columnName, _selectedDateRange!)
+          .then((value) {
         print("value: " + value);
       });
     }
@@ -105,7 +112,14 @@ class _TaskListState extends State<TaskList> {
     setState(() {
       selectedTasks.clear();
       for (var task in tasks) {
-        if (task['fieldValues']['nodes'][0]['name'] == columnName) {
+        DateTime dateCreation = DateTime.parse(
+            task['fieldValues']['nodes'][0]['createdAt'].replaceAll('T', ' '));
+        bool isGoodDate = dateCreation
+                .isBefore(_selectedDateRange?.end ?? DateTime(2030, 12, 30)) &&
+            dateCreation
+                .isAfter(_selectedDateRange?.start ?? DateTime(2020, 01, 01));
+        if (task['fieldValues']['nodes'][0]['name'] == columnName &&
+            isGoodDate) {
           selectedTasks.add(task);
         }
       }
@@ -118,43 +132,43 @@ class _TaskListState extends State<TaskList> {
       children: <Widget>[
         Card(
             child: Container(
-              width: double.maxFinite,
-              padding: const EdgeInsets.all(15.0),
-              child: Wrap(
-                spacing: 15,
-                crossAxisAlignment: WrapCrossAlignment.center,
-                direction: Axis.horizontal,
-                children: [
-                  const Icon(Icons.view_list_rounded, size: 25),
-                  const Text(" Tâche de "),
-                  SizedBox(
-                    width: 150.0,
-                    child: DropdownButtonFormField(
-                      value: dropdownvalue,
-                      items: columns.map((Map item) {
-                        return DropdownMenuItem(
-                          value: item['name'],
-                          child: Text(item['name']),
-                        );
-                      }).toList(),
-                      onChanged: (var newValue) {
-                        setState(() {
-                          dropdownvalue = newValue;
-                          updateSelectTasks(dropdownvalue);
-                        });
-                      },
-                    ),
-                  ),
-                  Text(dateString),
-                  ElevatedButton(
-                    style: style,
-                    onPressed: _show,
-                    child:
-                    const Icon(Icons.date_range_rounded, color: Colors.white),
-                  )
-                ],
+          width: double.maxFinite,
+          padding: const EdgeInsets.all(15.0),
+          child: Wrap(
+            spacing: 15,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            direction: Axis.horizontal,
+            children: [
+              const Icon(Icons.view_list_rounded, size: 25),
+              const Text(" Tâche de "),
+              SizedBox(
+                width: 150.0,
+                child: DropdownButtonFormField(
+                  value: dropdownvalue,
+                  items: columns.map((Map item) {
+                    return DropdownMenuItem(
+                      value: item['name'],
+                      child: Text(item['name']),
+                    );
+                  }).toList(),
+                  onChanged: (var newValue) {
+                    setState(() {
+                      dropdownvalue = newValue;
+                      updateSelectTasks(dropdownvalue);
+                    });
+                  },
+                ),
               ),
-            )),
+              Text(dateString),
+              ElevatedButton(
+                style: style,
+                onPressed: _show,
+                child:
+                    const Icon(Icons.date_range_rounded, color: Colors.white),
+              )
+            ],
+          ),
+        )),
         const SizedBox(height: 3),
         Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
           Expanded(
@@ -164,23 +178,22 @@ class _TaskListState extends State<TaskList> {
                       child: Wrap(
                         spacing: 15,
                         children: List<Widget>.generate(chipNames.length,
-                                (int index) {
-                              return InputChip(
-                                  label: Text(chipNames[index]),
-                                  selected: selectedIndex == index,
-                                  onSelected: (bool selected) {
-                                    setState(() {
-                                      if (selectedIndex != index) {
-                                        _dateString(
-                                            _selectedDateRange?.start,
-                                            _selectedDateRange?.end,
-                                            chipNames[index]);
-                                        selectedIndex = index;
-                                        updateSelectTasks(dropdownvalue);
-                                      }
-                                    });
-                                  });
-                            }),
+                            (int index) {
+                          return InputChip(
+                              label: Text(chipNames[index]),
+                              selected: selectedIndex == index,
+                              onSelected: (bool selected) {
+                                setState(() {
+                                  if (selectedIndex != index) {
+                                    _dateString(
+                                        _selectedDateRange?.start,
+                                        _selectedDateRange?.end,
+                                        chipNames[index]);
+                                    selectedIndex = index;
+                                  }
+                                });
+                              });
+                        }),
                       )))),
           Card(
               child: Container(
