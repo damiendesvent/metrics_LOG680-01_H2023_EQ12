@@ -64,7 +64,7 @@ class TaskCard extends StatelessWidget {
           int minutes = (((leadTimeSeconds % 86400) % 3600) / 60).floor();
           int seconds = (((leadTimeSeconds % 86400) % 3600) % 60).floor();
 
-          leadTime = "$days days, $hours hours, $minutes minutes, $seconds seconds";
+          leadTime = "${days}d:${hours}h:${minutes}m";
         }
     }
 
