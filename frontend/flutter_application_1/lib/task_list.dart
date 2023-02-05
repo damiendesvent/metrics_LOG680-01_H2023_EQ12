@@ -38,7 +38,8 @@ class _TaskListState extends State<TaskList> {
         context: context,
         firstDate: DateTime(2020, 1, 1),
         lastDate: DateTime(2030, 12, 31),
-        initialDateRange: DateTimeRange(start: DateTime(2020, 1, 1), end: DateTime.now()),
+        initialDateRange:
+            DateTimeRange(start: DateTime(2020, 1, 1), end: DateTime.now()),
         currentDate: DateTime.now(),
         saveText: 'Done',
         initialEntryMode: DatePickerEntryMode.inputOnly);
@@ -61,7 +62,8 @@ class _TaskListState extends State<TaskList> {
       case "Max":
         {
           dateString = "sur toute la période";
-          _selectedDateRange = DateTimeRange(start: DateTime(2020, 1, 1), end: DateTime.now());
+          _selectedDateRange =
+              DateTimeRange(start: DateTime(2020, 01, 01), end: DateTime.now());
         }
         break;
       case "Mois":
@@ -84,7 +86,14 @@ class _TaskListState extends State<TaskList> {
           String startDate = startDt.toString().split(' ')[0];
           String endDate = endDt.toString().split(' ')[0];
           dateString = "du $startDate au $endDate";
-          _selectedDateRange = DateTimeRange(start: DateTime.parse(startDate), end: DateTime.parse(endDate));
+          _selectedDateRange = DateTimeRange(
+              start: DateTime.parse(startDate), end: DateTime.parse(endDate));
+        }
+        break;
+      case "Reset":
+        {
+          dateString = "info directe de github";
+          _selectedDateRange = null;
         }
         break;
       case "Reset":
@@ -94,14 +103,14 @@ class _TaskListState extends State<TaskList> {
         }
         break;
     }
+    updateSelectTasks(dropdownvalue);
   }
 
   final ButtonStyle style = ElevatedButton.styleFrom(
     textStyle: const TextStyle(fontSize: 20),
   );
 
-  void updateSelectTasks(var columnName)
-  {
+  void updateSelectTasks(var columnName) {
     // TODO: contact api to get tasks with column name
     print("updateSelectTasks: " + columnName);
 
@@ -177,43 +186,43 @@ class _TaskListState extends State<TaskList> {
       children: <Widget>[
         Card(
             child: Container(
-              width: double.maxFinite,
-              padding: const EdgeInsets.all(15.0),
-              child: Wrap(
-                spacing: 15,
-                crossAxisAlignment: WrapCrossAlignment.center,
-                direction: Axis.horizontal,
-                children: [
-                  const Icon(Icons.view_list_rounded, size: 25),
-                  const Text(" Tâche de "),
-                  SizedBox(
-                    width: 150.0,
-                    child: DropdownButtonFormField(
-                      value: dropdownvalue,
-                      items: columns.map((Map item) {
-                        return DropdownMenuItem(
-                          value: item['name'],
-                          child: Text(item['name']),
-                        );
-                      }).toList(),
-                      onChanged: (var newValue) {
-                        setState(() {
-                          dropdownvalue = newValue;
-                          updateSelectTasks(dropdownvalue);
-                        });
-                      },
-                    ),
-                  ),
-                  Text(dateString),
-                  ElevatedButton(
-                    style: style,
-                    onPressed: _show,
-                    child:
-                    const Icon(Icons.date_range_rounded, color: Colors.white),
-                  )
-                ],
+          width: double.maxFinite,
+          padding: const EdgeInsets.all(15.0),
+          child: Wrap(
+            spacing: 15,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            direction: Axis.horizontal,
+            children: [
+              const Icon(Icons.view_list_rounded, size: 25),
+              const Text(" Tâche de "),
+              SizedBox(
+                width: 150.0,
+                child: DropdownButtonFormField(
+                  value: dropdownvalue,
+                  items: columns.map((Map item) {
+                    return DropdownMenuItem(
+                      value: item['name'],
+                      child: Text(item['name']),
+                    );
+                  }).toList(),
+                  onChanged: (var newValue) {
+                    setState(() {
+                      dropdownvalue = newValue;
+                      updateSelectTasks(dropdownvalue);
+                    });
+                  },
+                ),
               ),
-            )),
+              Text(dateString),
+              ElevatedButton(
+                style: style,
+                onPressed: _show,
+                child:
+                    const Icon(Icons.date_range_rounded, color: Colors.white),
+              )
+            ],
+          ),
+        )),
         const SizedBox(height: 3),
         Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
           Expanded(
