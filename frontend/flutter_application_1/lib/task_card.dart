@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 
 class TaskCard extends StatelessWidget {
@@ -13,6 +15,7 @@ class TaskCard extends StatelessWidget {
   String creatorName = "";
   String createdAt = "";
   String taskType = "";
+  String columnName = "";
 
   String leadTime = "Aucune Donnée";
 
@@ -20,7 +23,11 @@ class TaskCard extends StatelessWidget {
   Widget build(BuildContext context) {
     if (!customCard) {
       taskName = task['content']['title'];
-      status = task['fieldValues']['nodes'][0]['name'];
+      //status = task['fieldValues']['nodes'][0]['name'];
+      columnName = task['fieldValues']['nodes'][0]['name'];
+      status = task['content']['state'];
+      taskType = "- " +  task['content']['__typename'];
+
       assigneeName = task['content']['assignees']['nodes'].isEmpty
           ? ""
           : task['content']['assignees']['nodes'][0]['login'];
@@ -34,8 +41,12 @@ class TaskCard extends StatelessWidget {
     }
     else
     {
-        // TODO: fix api to return same json as original github json
-        taskName = task['name'];
+        // decode task name to utf8 to display emojis correctly
+        taskName = utf8.decode(task['name'].toString().codeUnits);
+
+
+        columnName = task['column_name'];
+        //taskName = task['name'];
 
         if (task['type_name'] == 'Issue')
         {
@@ -48,13 +59,16 @@ class TaskCard extends StatelessWidget {
         String assignee = task['assignees'];
         assignee = assignee.substring(1, assignee.length - 1);
         List<String> assigneeList = assignee.split(',');
-        assigneeName = assigneeList[0];
+        assigneeName = utf8.decode(assigneeList[0].toString().codeUnits);
+
+        // remove quotes from assignee name
+        assigneeName = assigneeName.replaceAll("'", '');
 
         if (assigneeName.isNotEmpty && !chipNames.contains(assigneeName)) {
           chipNames.add(assigneeName);
         }
 
-        creatorName = task['creator']; //TODO: Need to add creator field to api
+        creatorName = utf8.decode(task['creator'].toString().codeUnits);
         createdAt = task['created_at'].substring(0, task['created_at'].indexOf('T'));
 
         double leadTimeSeconds = task['lead_time'];
@@ -86,7 +100,7 @@ class TaskCard extends StatelessWidget {
               taskName,
               style: const TextStyle(fontWeight: FontWeight.w900),
             ),
-            Container(alignment: Alignment.centerRight, child: Text("$status $taskType"))
+            Container(alignment: Alignment.centerRight, child: Text("$status $taskType - $columnName"))
           ]),
           TableRow(children: [
             Container(
@@ -95,8 +109,10 @@ class TaskCard extends StatelessWidget {
                   "Créé par $creatorName le $createdAt",
                   style: const TextStyle(fontSize: 12, color: Colors.blueGrey),
                 )),
+
             Container()
           ]),
+
           TableRow(children: [
             Wrap(
               spacing: 5,

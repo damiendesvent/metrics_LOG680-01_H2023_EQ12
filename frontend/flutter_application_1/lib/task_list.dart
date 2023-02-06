@@ -19,7 +19,7 @@ class _TaskListState extends State<TaskList> {
 
   List selectedTasks = [];
   var dropdownvalue = columns.first['name'];
-  var chipNames = ["Semaine", "Mois", "Max"];
+  var chipNames = ["Semaine", "Mois", "Max", "Aucun"];
   var dateString = "sur toute la période";
   int? selectedIndex = 2;
   List<Widget> cards = [];
@@ -90,13 +90,7 @@ class _TaskListState extends State<TaskList> {
               start: DateTime.parse(startDate), end: DateTime.parse(endDate));
         }
         break;
-      case "Reset":
-        {
-          dateString = "info directe de github";
-          _selectedDateRange = null;
-        }
-        break;
-      case "Reset":
+      case "Aucun": // reset
         {
           dateString = "info directe de github";
           _selectedDateRange = null;
@@ -129,7 +123,13 @@ class _TaskListState extends State<TaskList> {
         selectedTasks.clear();
         // add cards to list
         for (var i = 0; i < x2['cards'].length; i++) {
-          selectedTasks.add(x2['cards'][i]);
+          var json = x2['cards'][i];
+
+          // add cplumn name to json
+          json['column_name'] = columnName;
+          selectedTasks.add(json);
+
+          //selectedTasks.add(x2['cards'][i]);
         }
         print("selectedTasks: $selectedTasks");
 
@@ -234,6 +234,9 @@ class _TaskListState extends State<TaskList> {
                         children:  List<Widget>.generate(chipNames.length,
                                 (int index) {
                               return InputChip(
+                                  backgroundColor: index == 3
+                                      ? Colors.red
+                                      : Colors.grey,
                                   label: Text(chipNames[index]),
                                   selected: selectedIndex == index,
                                   onSelected: (bool selected) {
@@ -252,20 +255,20 @@ class _TaskListState extends State<TaskList> {
                       ))
 
               )),
-          Card(
-              child: Container(
-                padding: const EdgeInsets.all(15.0),
-                child: ElevatedButton(
-                  onPressed: () {
-                    _dateString(
-                        _selectedDateRange?.start,
-                        _selectedDateRange?.end,
-                        "Reset");
-                    updateSelectTasks(dropdownvalue);
-                  },
-                  child: const Text('Reset'),
-                ),
-              )),
+          // Card(
+          //     child: Container(
+          //       padding: const EdgeInsets.all(15.0),
+          //       child: ElevatedButton(
+          //         onPressed: () {
+          //           _dateString(
+          //               _selectedDateRange?.start,
+          //               _selectedDateRange?.end,
+          //               "Reset");
+          //           updateSelectTasks(dropdownvalue);
+          //         },
+          //         child: const Text('Reset'),
+          //       ),
+          //     )),
 
           if (selectedTasks.isNotEmpty && getAverageLeadTime(selectedTasks) != "0")
             Card(
