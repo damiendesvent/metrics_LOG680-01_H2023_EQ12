@@ -33,7 +33,7 @@ metadata = sqlalchemy.MetaData()
 # )
 
 engine = sqlalchemy.create_engine(
-    DATABASE_URL
+    DATABASE_URL, client_encoding='utf8'
 )
 
 
