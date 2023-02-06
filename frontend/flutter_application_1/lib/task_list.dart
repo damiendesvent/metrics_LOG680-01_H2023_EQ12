@@ -1,5 +1,4 @@
 import 'dart:convert';
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/task_card.dart';
@@ -69,16 +68,20 @@ class _TaskListState extends State<TaskList> {
       case "Mois":
         {
           dateString =
-          "du ${DateTime.now().subtract(const Duration(days: 31)).toString().split(' ')[0]} au ${DateTime.now().toString().split(' ')[0]}";
-          _selectedDateRange = DateTimeRange(start: DateTime.now().subtract(const Duration(days: 31)), end: DateTime.now().add(const Duration(days: 1)));
+              "du ${DateTime.now().subtract(const Duration(days: 31)).toString().split(' ')[0]} au ${DateTime.now().toString().split(' ')[0]}";
+          _selectedDateRange = DateTimeRange(
+              start: DateTime.now().subtract(const Duration(days: 31)),
+              end: DateTime.now().add(const Duration(days: 1)));
         }
         break;
       case "Semaine":
         {
           dateString =
-          "du ${DateTime.now().subtract(const Duration(days: 7)).toString().split(' ')[0]} au ${DateTime.now().toString().split(' ')[0]}";
+              "du ${DateTime.now().subtract(const Duration(days: 7)).toString().split(' ')[0]} au ${DateTime.now().toString().split(' ')[0]}";
 
-          _selectedDateRange = DateTimeRange(start: DateTime.now().subtract(const Duration(days: 7)), end: DateTime.now().add(const Duration(days: 1)));
+          _selectedDateRange = DateTimeRange(
+              start: DateTime.now().subtract(const Duration(days: 7)),
+              end: DateTime.now().add(const Duration(days: 1)));
         }
         break;
       case "Specific":
@@ -110,10 +113,10 @@ class _TaskListState extends State<TaskList> {
 
     // get cards by column name and date range
     print(_selectedDateRange);
-    if (_selectedDateRange != null)
-    {
-      Api().getCardsByColumnAndTimeRange(columnName, _selectedDateRange!).then((
-          value) {
+    if (_selectedDateRange != null) {
+      Api()
+          .getCardsByColumnAndTimeRange(columnName, _selectedDateRange!)
+          .then((value) {
         //print("value: $value");
 
         // parse string to json
@@ -134,12 +137,10 @@ class _TaskListState extends State<TaskList> {
         print("selectedTasks: $selectedTasks");
 
         setState(() {
-
           isCustomCard = true;
         });
-
       });
-    }else {
+    } else {
       setState(() {
         selectedTasks.clear();
         for (var task in tasks) {
@@ -152,15 +153,13 @@ class _TaskListState extends State<TaskList> {
     }
   }
 
-  String getAverageLeadTime(List tasks)
-  {
+  String getAverageLeadTime(List tasks) {
     if (tasks.isEmpty || !isCustomCard) {
       return "0";
     }
 
     double sum = 0;
-    for (var task in tasks)
-    {
+    for (var task in tasks) {
       sum += task['lead_time'];
     }
 
@@ -172,10 +171,8 @@ class _TaskListState extends State<TaskList> {
       int minutes = (((leadTimeAverage % 86400) % 3600) / 60).floor();
       int seconds = (((leadTimeAverage % 86400) % 3600) % 60).floor();
 
-
       return "${days}d:${hours}h:${minutes}m";
-    }
-    else {
+    } else {
       return "0";
     }
   }
@@ -231,30 +228,27 @@ class _TaskListState extends State<TaskList> {
                       padding: const EdgeInsets.all(15.0),
                       child: Wrap(
                         spacing: 15,
-                        children:  List<Widget>.generate(chipNames.length,
-                                (int index) {
-                              return InputChip(
-                                  backgroundColor: index == 3
-                                      ? Colors.red
-                                      : Colors.grey,
-                                  label: Text(chipNames[index]),
-                                  selected: selectedIndex == index,
-                                  onSelected: (bool selected) {
-                                    setState(() {
-                                      if (selectedIndex != index) {
-                                        _dateString(
-                                            _selectedDateRange?.start,
-                                            _selectedDateRange?.end,
-                                            chipNames[index]);
-                                        selectedIndex = index;
-                                        updateSelectTasks(dropdownvalue);
-                                      }
-                                    });
-                                  });
-                            }),
-                      ))
-
-              )),
+                        children: List<Widget>.generate(chipNames.length,
+                            (int index) {
+                          return InputChip(
+                              backgroundColor:
+                                  index == 3 ? Colors.red : Colors.grey,
+                              label: Text(chipNames[index]),
+                              selected: selectedIndex == index,
+                              onSelected: (bool selected) {
+                                setState(() {
+                                  if (selectedIndex != index) {
+                                    _dateString(
+                                        _selectedDateRange?.start,
+                                        _selectedDateRange?.end,
+                                        chipNames[index]);
+                                    selectedIndex = index;
+                                    updateSelectTasks(dropdownvalue);
+                                  }
+                                });
+                              });
+                        }),
+                      )))),
           // Card(
           //     child: Container(
           //       padding: const EdgeInsets.all(15.0),
@@ -270,7 +264,8 @@ class _TaskListState extends State<TaskList> {
           //       ),
           //     )),
 
-          if (selectedTasks.isNotEmpty && getAverageLeadTime(selectedTasks) != "0")
+          if (selectedTasks.isNotEmpty &&
+              getAverageLeadTime(selectedTasks) != "0")
             Card(
                 child: Container(
                     padding: const EdgeInsets.all(15.0),
@@ -279,8 +274,8 @@ class _TaskListState extends State<TaskList> {
                         child: Chip(
                             avatar: const Icon(Icons.access_time_rounded),
                             backgroundColor: Colors.blue.shade100,
-                            label:  Text(
-                              getAverageLeadTime(selectedTasks),//"5d:5h",
+                            label: Text(
+                              getAverageLeadTime(selectedTasks), //"5d:5h",
                               style: TextStyle(fontWeight: FontWeight.w600),
                             )))))
           else
@@ -292,11 +287,10 @@ class _TaskListState extends State<TaskList> {
                         child: Chip(
                             avatar: const Icon(Icons.access_time_rounded),
                             backgroundColor: Colors.blue.shade100,
-                            label:  Text(
-                              "Aucune Donnée",//"5d:5h",
+                            label: Text(
+                              "Aucune Donnée", //"5d:5h",
                               style: TextStyle(fontWeight: FontWeight.w600),
                             )))))
-
         ]),
         const SizedBox(height: 3),
         if (selectedTasks.isEmpty)
