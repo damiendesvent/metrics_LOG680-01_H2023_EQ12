@@ -50,6 +50,14 @@ class Worker:
 
         self.last_snapshot_json = self.__get_last_snapshot()
 
+        # make a singleton out of this class
+        Worker.__instance = self
+
+    def __new__(cls, *args, **kwargs):
+        if not hasattr(cls, 'instance'):
+            cls.__instance = super(Worker, cls).__new__(cls)
+        return cls.__instance
+
     def __get_last_snapshot(self):
         if os.path.isfile('last_snapshot.json'):
             print("last_snapshot.json exists")
@@ -225,9 +233,11 @@ class Worker:
             logging.info("Lead time: {0} for card {1}".format(card.lead_time, card.id))
         else:
             logging.info("Card is not closed, not calculating lead time")
-            
 
-    
+    def set_project_info(self, project_id, project_owner):
+        self.set_project_id(project_id)
+        self.set_project_owner(project_owner)
+
     def snapshot(self):
         logging.info("Snapshotting...")
 

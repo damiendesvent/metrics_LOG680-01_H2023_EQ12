@@ -23,8 +23,8 @@ router = APIRouter(
     Nombre de tâches actives pour une colonne donnée
 """
 
-@router.get("/get_column_cards_by_time_range/{column_id}", response_model=List[src.schemas.Card])
-async def get_column_cards_by_time_range(column_id: str, start_date: datetime, end_date: datetime, db : Session = Depends(get_db), page_number: int = 1, items_count: int = 20):
+@router.get("/get_column_cards_by_time_range/{project_id}/{column_id}", response_model=List[src.schemas.Card])
+async def get_column_cards_by_time_range(project_id: int, column_id: str, start_date: datetime, end_date: datetime, db : Session = Depends(get_db), page_number: int = 1, items_count: int = 20):
     offset = (page_number - 1) * items_count
 
     if page_number < 1:
@@ -42,7 +42,7 @@ async def get_column_cards_by_time_range(column_id: str, start_date: datetime, e
     print(start_date.strftime("%Y-%m-%d %H:%M:%S"))
     print(end_date.strftime("%Y-%m-%d %H:%M:%S"))
     
-    cards = src.utils.cards.get_cards_by_column_id_with_time_range(db, column_id,  start_date, end_date, items_count, offset)
+    cards = src.utils.cards.get_cards_by_column_id_with_time_range(db, column_id, project_id, start_date, end_date, items_count, offset)
 
     return JSONResponse(
             status_code=200,
@@ -54,8 +54,8 @@ async def get_column_cards_by_time_range(column_id: str, start_date: datetime, e
     Nombre de tâches dans chaque colonne pour une période donnée (snapshots du board Kanban entre certaines dates).
 """
 
-@router.get("/get_all_columns_with_cards_by_time_range", response_model=List[src.schemas.ProjectColumn])
-async def get_all_columns_with_cards_by_time_range(start_date: datetime, end_date: datetime, db : Session = Depends(get_db), page_number: int = 1, items_count: int = 20):
+@router.get("/get_all_columns_with_cards_by_time_range/{project_id}", response_model=List[src.schemas.ProjectColumn])
+async def get_all_columns_with_cards_by_time_range(project_id: int, start_date: datetime, end_date: datetime, db : Session = Depends(get_db), page_number: int = 1, items_count: int = 20):
     offset = (page_number - 1) * items_count
 
     if page_number < 1:
@@ -80,8 +80,8 @@ async def get_all_columns_with_cards_by_time_range(start_date: datetime, end_dat
 """
     Nombre de tâches dans chaque colonne sans tenir compte de la date
 """
-@router.get("/get_all_columns_with_cards", response_model=List[src.schemas.ProjectColumn])
-async def get_all_columns_with_cards(db : Session = Depends(get_db), page_number: int = 1, items_count: int = 20):
+@router.get("/get_all_columns_with_cards/{project_id}", response_model=List[src.schemas.ProjectColumn])
+async def get_all_columns_with_cards(project_id: int, db : Session = Depends(get_db), page_number: int = 1, items_count: int = 20):
     offset = (page_number - 1) * items_count
 
     if page_number < 1:
@@ -105,8 +105,8 @@ async def get_all_columns_with_cards(db : Session = Depends(get_db), page_number
 """
     Nombre de tâches dans une colonne donnée sans tenir compte de la date
 """
-@router.get("/get_column_cards/{column_id}", response_model=List[src.schemas.Card])
-async def get_column_cards(column_id: str, db : Session = Depends(get_db), page_number: int = 1, items_count: int = 20):
+@router.get("/get_column_cards/{project_id}/{column_id}", response_model=List[src.schemas.Card])
+async def get_column_cards(project_id: int, column_id: str, db : Session = Depends(get_db), page_number: int = 1, items_count: int = 20):
     offset = (page_number - 1) * items_count
 
     if page_number < 1:
@@ -118,7 +118,7 @@ async def get_column_cards(column_id: str, db : Session = Depends(get_db), page_
     if src.utils.columns.get_column_by_id(db, column_id) is None:
         raise HTTPException(status_code=404, detail="Column not found with id: " + column_id)
 
-    cards = src.utils.cards.get_cards_by_column_id(db, column_id, items_count, offset)
+    cards = src.utils.cards.get_cards_by_column_id(db, column_id, project_id, items_count, offset)
 
     return JSONResponse(
             status_code=200,
@@ -129,8 +129,8 @@ async def get_column_cards(column_id: str, db : Session = Depends(get_db), page_
 """
     Nombre de tâches complétés pour une période donnée 
 """
-@router.get("/get_completed_cards_by_time_range", response_model=List[src.schemas.Card])
-async def get_completed_cards_by_time_range(start_date: datetime , end_date: datetime, db : Session = Depends(get_db), page_number: int = 1, items_count: int = 20):
+@router.get("/get_completed_cards_by_time_range/{project_id}", response_model=List[src.schemas.Card])
+async def get_completed_cards_by_time_range(project_id: int, start_date: datetime , end_date: datetime, db : Session = Depends(get_db), page_number: int = 1, items_count: int = 20):
     offset = (page_number - 1) * items_count
 
     if page_number < 1:

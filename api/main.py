@@ -61,5 +61,10 @@ async def add_process_time_header(request, call_next):
     response.headers["X-Process-Time"] = str(f'{process_time:0.4f} sec')
     return response 
 
+@app.get("/set_project/{project_id}/{project_owner}")
+async def set_project(project_id: int, project_owner: str):
+    worker.set_project_info(project_id, project_owner)
+    return {'status': 'ok'}
+
 if __name__ == "__main__":
     uvicorn.run(app, host='0.0.0.0', port=5000)
