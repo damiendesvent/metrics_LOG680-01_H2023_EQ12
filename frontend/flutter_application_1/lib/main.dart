@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/columns_nb_task.dart';
 import 'package:flutter_application_1/task_list.dart';
+import 'package:flutter_application_1/task_page.dart';
+import 'package:flutter_application_1/pull_page.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
@@ -42,6 +44,10 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   String description =
       "Dashboard des métriques pour le laboratoire 1 de LOG680\n\nEquipe :\n - Damien\n - Bruno\n - Dorian Perthuis";
+
+  int _pageDisplayIndex =
+      0; //'0' for the project tasks page and '1' for the pull requests page.
+  List<Widget> _bodyWidgets = [TasksPageLayout(), PullPageLayout()];
 
   void getProjectInfos() async {
     Uri graphQlUri = Uri.parse('https://api.github.com/graphql');
@@ -111,11 +117,21 @@ class _MyHomePageState extends State<MyHomePage> {
                       ListTile(
                           leading: Icon(Icons.task_rounded),
                           title: Text("Tâches"),
-                          onTap: () {}),
+                          onTap: () {
+                            setState(() {
+                              _pageDisplayIndex = 0;
+                              Navigator.of(context).pop();
+                            });
+                          }),
                       ListTile(
                           leading: Icon(Icons.arrow_circle_down_rounded),
                           title: Text("Pull requests"),
-                          onTap: () {}),
+                          onTap: () {
+                            setState(() {
+                              _pageDisplayIndex = 1;
+                              Navigator.of(context).pop();
+                            });
+                          }),
                     ]),
                   )
                 ],
@@ -124,18 +140,7 @@ class _MyHomePageState extends State<MyHomePage> {
             body: Container(
                 padding: const EdgeInsets.all(20.0),
                 child: snapshot.hasData && tasks.isNotEmpty
-                    ? Row(
-                        children: [
-                          const Expanded(child: TaskList()),
-                          const SizedBox(width: 30),
-                          Expanded(
-                              child: Column(children: const [
-                            ColumnsNbTask(),
-                            SizedBox(height: 30),
-                            GraphNbTask()
-                          ]))
-                        ],
-                      )
+                    ? _bodyWidgets.elementAt(_pageDisplayIndex)
                     : const Center(child: CircularProgressIndicator())));
       });
 
