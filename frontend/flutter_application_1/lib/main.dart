@@ -40,6 +40,9 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  String description =
+      "Dashboard des métriques pour le laboratoire 1 de LOG680\n\nEquipe :\n - Damien\n - Bruno\n - Dorian Perthuis";
+
   void getProjectInfos() async {
     Uri graphQlUri = Uri.parse('https://api.github.com/graphql');
 
@@ -49,7 +52,7 @@ class _MyHomePageState extends State<MyHomePage> {
         },
         body: json.encode({
           "query":
-          "query{ node(id: \"PVT_kwHOBme_us4AKmxQ\") { ... on ProjectV2 { items(first: 20) { nodes { fieldValues(last: 1) { nodes { ... on ProjectV2ItemFieldSingleSelectValue { name createdAt } } } content { ... on DraftIssue { title body } ... on Issue { __typename title state assignees(first: 10) { nodes { login } } } ... on PullRequest {__typename title state assignees(first: 10) { nodes { name } } } } creator { login } } } } } }"
+              "query{ node(id: \"PVT_kwHOBme_us4AKmxQ\") { ... on ProjectV2 { items(first: 20) { nodes { fieldValues(last: 1) { nodes { ... on ProjectV2ItemFieldSingleSelectValue { name createdAt } } } content { ... on DraftIssue { title body } ... on Issue { __typename title state assignees(first: 10) { nodes { login } } } ... on PullRequest {__typename title state assignees(first: 10) { nodes { name } } } } creator { login } } } } } }"
         }));
     /*String response_body =
         '{ "data": { "node": { "items": { "nodes": [ { "fieldValues": { "nodes": [ { "name": "Done ✅", "createdAt": "2023-01-13T15:06:52Z" } ] }, "content": { "title": "Test issue", "assignees": { "nodes": [] } }, "creator": { "login": "elblogbruno" } }, { "fieldValues": { "nodes": [ { "name": "Done ✅", "createdAt": "2023-01-13T15:22:56Z" } ] }, "content": { "title": "test modèle issue", "assignees": { "nodes": [] } }, "creator": { "login": "damiendesvent" } }, { "fieldValues": { "nodes": [ { "name": "In progress 🛠️", "createdAt": "2023-01-18T15:00:36Z" } ] }, "content": { "title": "[FEATURE] Création de l\'UI de visualisation des métriques", "assignees": { "nodes": [ { "login": "Dorian-Perthuis" } ] } }, "creator": { "login": "damiendesvent" } }, { "fieldValues": { "nodes": [ { "name": "In progress 🛠️", "createdAt": "2023-01-23T00:19:11Z" } ] }, "content": { "title": "[FEATURE] Création des requêtes d\'import des métriques", "assignees": { "nodes": [ { "login": "damiendesvent" } ] } }, "creator": { "login": "damiendesvent" } }, { "fieldValues": { "nodes": [ { "name": "In progress 🛠️", "createdAt": "2023-01-18T15:02:49Z" } ] }, "content": { "title": "[FEATURE] Création de la base de données", "assignees": { "nodes": [ { "login": "elblogbruno" } ] } }, "creator": { "login": "damiendesvent" } }, { "fieldValues": { "nodes": [ { "name": "To do ⏲️", "createdAt": "2023-01-18T14:54:34Z" } ] }, "content": { "title": "[FEATURE] Création de l\'API Rest", "assignees": { "nodes": [] } }, "creator": { "login": "damiendesvent" } }, { "fieldValues": { "nodes": [ { "name": "Review 👀", "createdAt": "2023-01-23T00:25:59Z" } ] }, "content": { "title": "feat: started flutter project", "assignees": { "nodes": [] } }, "creator": { "login": "damiendesvent" } } ] } } } }';
@@ -67,7 +70,7 @@ class _MyHomePageState extends State<MyHomePage> {
         int indexStatus = -1;
         for (var item in columns) {
           indexStatus =
-          item['name'] == status ? columns.indexOf(item) : indexStatus;
+              item['name'] == status ? columns.indexOf(item) : indexStatus;
         }
         if (indexStatus != -1) {
           setState(() {
@@ -99,28 +102,44 @@ class _MyHomePageState extends State<MyHomePage> {
             appBar: AppBar(
               title: Text(widget.title),
             ),
+            drawer: Drawer(
+              child: ListView(
+                children: <Widget>[
+                  Container(child: DrawerHeader(child: Text("$description"))),
+                  Container(
+                    child: Column(children: <Widget>[
+                      ListTile(
+                          leading: Icon(Icons.task_rounded),
+                          title: Text("Tâches"),
+                          onTap: () {}),
+                      ListTile(
+                          leading: Icon(Icons.arrow_circle_down_rounded),
+                          title: Text("Pull requests"),
+                          onTap: () {}),
+                    ]),
+                  )
+                ],
+              ),
+            ),
             body: Container(
                 padding: const EdgeInsets.all(20.0),
                 child: snapshot.hasData && tasks.isNotEmpty
                     ? Row(
-                  children: [
-                    const Expanded(child: TaskList()),
-                    const SizedBox(width: 30),
-                    Expanded(
-                        child: Column(children: const [
-                          ColumnsNbTask(),
-                          SizedBox(height: 30),
-                          GraphNbTask()
-                        ]))
-                  ],
-                )
+                        children: [
+                          const Expanded(child: TaskList()),
+                          const SizedBox(width: 30),
+                          Expanded(
+                              child: Column(children: const [
+                            ColumnsNbTask(),
+                            SizedBox(height: 30),
+                            GraphNbTask()
+                          ]))
+                        ],
+                      )
                     : const Center(child: CircularProgressIndicator())));
       });
 
   Future<bool> fetchData() => Future.delayed(const Duration(seconds: 1), () {
-    return true;
-  });
+        return true;
+      });
 }
-
-
-
