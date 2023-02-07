@@ -246,8 +246,8 @@ class Worker:
             logging.info("Card is not closed, not calculating lead time")
 
     def set_project_info(self, project_id, project_owner):
-        self.set_project_id(project_id)
-        self.set_project_owner(project_owner)
+        self.project_id = project_id
+        self.project_owner = project_owner
 
     def snapshot(self):
         logging.info("Snapshotting...")
