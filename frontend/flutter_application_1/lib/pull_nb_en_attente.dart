@@ -20,11 +20,15 @@ class _PullNbEnAttenteState extends State<PullNbEnAttente> {
       padding: const EdgeInsets.all(15.0),
       child: Wrap(
           crossAxisAlignment: WrapCrossAlignment.center,
-          runAlignment: WrapAlignment.spaceBetween,
-          spacing: 15,
+          alignment: WrapAlignment.spaceBetween,
           children: [
-            Icon(Icons.warning_amber_rounded, size: 25),
-            Text("Nombre de pull request en attente"),
+            Wrap(
+                crossAxisAlignment: WrapCrossAlignment.center,
+                spacing: 15,
+                children: [
+                  Icon(Icons.warning_amber_rounded, size: 25),
+                  Text("Nombre de pull request en attente")
+                ]),
             Container(
                 height: 30,
                 padding:
