@@ -79,7 +79,7 @@ def get_cards_by_column_id_with_time_range(db: Session, column_id: str, project_
 
         column_id = db.query(models.ProjectColumn).filter(models.ProjectColumn.name == column_id).filter(models.ProjectColumn.project_id == project_id).filter(models.ProjectColumn.project_owner==project_owner).first().id
 
-        return db.query(models.Card).filter(models.Card.column_id == column_id).filter(models.Card.uploaded_at >= start_time).filter(models.Card.uploaded_at <= end_time).limit(items_per_page).offset(offset).all()
+        return db.query(models.Card).filter(models.Card.column_id == column_id).filter(models.Card.uploaded_at >= start_time).filter(models.Card.uploaded_at <= end_time).filter(models.Card.parent_card_id == None).limit(items_per_page).offset(offset).all()
 
 """
     This function returns all the cards that have been uploaded in a specific time range. 
