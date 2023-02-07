@@ -53,7 +53,7 @@ def get_card_by_id(db: Session, id: str):
 """
     This function returns all the cards of a specific column. Column_id can be either the id of the column or the name of the column
 """
-def get_cards_by_column_id(db: Session, column_id: str, items_per_page: int, offset: int):
+def get_cards_by_column_id(db: Session, column_id: str, project_owner: str, project_id: int, items_per_page: int, offset: int):
     # get if column_id is a valid uuid or not
     if __is_valid_uuid(column_id) == True:
         return db.query(models.Card).filter(models.Card.column_id == column_id).limit(items_per_page).offset(offset).all()
@@ -61,7 +61,7 @@ def get_cards_by_column_id(db: Session, column_id: str, items_per_page: int, off
         # we get the column id searching by the name of the column
         print("column_id: ", column_id)
 
-        column_id = db.query(models.ProjectColumn).filter(models.ProjectColumn.name == column_id).first().id
+        column_id = db.query(models.ProjectColumn).filter(models.ProjectColumn.name == column_id).filter(models.ProjectColumn.project_id == project_id).filter(models.ProjectColumn.project_owner==project_owner).first().id
 
         return db.query(models.Card).filter(models.Card.column_id == column_id).limit(items_per_page).offset(offset).all()
 
@@ -69,7 +69,7 @@ def get_cards_by_column_id(db: Session, column_id: str, items_per_page: int, off
 """
     This function returns all the cards of a specific column that have been uploaded in a specific time range. Column_id can be either the id of the column or the name of the column
 """
-def get_cards_by_column_id_with_time_range(db: Session, column_id: str , start_time: datetime, end_time: datetime, items_per_page: int, offset: int):
+def get_cards_by_column_id_with_time_range(db: Session, column_id: str, project_owner: str, project_id: int , start_time: datetime, end_time: datetime, items_per_page: int, offset: int):
     # get if column_id is a valid uuid or not
     if __is_valid_uuid(column_id) == True:
         return db.query(models.Card).filter(models.Card.column_id == column_id).filter(models.Card.uploaded_at >= start_time).filter(models.Card.uploaded_at <= end_time).limit(items_per_page).offset(offset).all()
@@ -77,17 +77,18 @@ def get_cards_by_column_id_with_time_range(db: Session, column_id: str , start_t
         # we get the column id searching by the name of the column
         print("column_id: ", column_id)
 
-        column_id = db.query(models.ProjectColumn).filter(models.ProjectColumn.name == column_id).first().id
+        column_id = db.query(models.ProjectColumn).filter(models.ProjectColumn.name == column_id).filter(models.ProjectColumn.project_id == project_id).filter(models.ProjectColumn.project_owner==project_owner).first().id
 
-        return db.query(models.Card).filter(models.Card.column_id == column_id).filter(models.Card.uploaded_at >= start_time).filter(models.Card.uploaded_at <= end_time).limit(items_per_page).offset(offset).all()
+        return db.query(models.Card).filter(models.Card.column_id == column_id).filter(models.Card.uploaded_at >= start_time).filter(models.Card.uploaded_at <= end_time).filter(models.Card.parent_card_id == None).limit(items_per_page).offset(offset).all()
+
 """
     This function returns all the cards that have been uploaded in a specific time range. 
 """
 def get_cards_by_time_range(db: Session, start_time: datetime, end_time: datetime, items_per_page: int, offset: int):
     return db.query(models.Card).filter(models.Card.uploaded_at >= start_time).filter(models.Card.uploaded_at <= end_time).limit(items_per_page).offset(offset).all()
 
-"""
-    This function returns all the cards that have been uploaded to the done column
-"""
-def get_completed_cards_by_time_range(db: Session, start_time: datetime, end_time: datetime, items_per_page: int, offset: int):
-    return db.query(models.Card).filter(models.Card.uploaded_at >= start_time).filter(models.Card.uploaded_at <= end_time).filter(models.Card.parent_card_id == None).filter(models.Card.closed == True).limit(items_per_page).offset(offset).all()
+# """
+#     This function returns all the cards that have been uploaded to the done column
+# """
+# def get_completed_cards_by_time_range(db: Session, start_time: datetime, end_time: datetime, items_per_page: int, offset: int):
+#     return db.query(models.Card).filter(models.Card.uploaded_at >= start_time).filter(models.Card.uploaded_at <= end_time).filter(models.Card.parent_card_id == None).filter(models.Card.closed == True).limit(items_per_page).offset(offset).all()

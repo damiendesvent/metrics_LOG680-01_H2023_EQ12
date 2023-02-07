@@ -33,21 +33,21 @@ def create_new_column(db: Session, column: src.schemas.ProjectColumn):
 """
     This function returns a column by its id or by its name
 """
-def get_column_by_id(db: Session, id: str):
+def get_column_by_id(db: Session, id: str, project_owner: str, project_id: int):
     if __is_valid_uuid(id) == True:
         return db.query(models.ProjectColumn).filter(models.ProjectColumn.id == id).first()
     else:
-        return get_column_by_name(db, id)
+        return get_column_by_name(db, id, project_owner, project_id)
 
 """
     This function returns a column by its name
 """
-def get_column_by_name(db: Session, name: str):
-    return db.query(models.ProjectColumn).filter(models.ProjectColumn.name == name).first()
+def get_column_by_name(db: Session, name: str, project_owner: str, project_id: int):
+    return db.query(models.ProjectColumn).filter(models.ProjectColumn.name == name).filter(models.ProjectColumn.project_id == project_id).filter(models.ProjectColumn.project_owner == project_owner).first()
 
 
-def get_all_columns(db: Session):
-    return db.query(models.ProjectColumn).all()
+# def get_all_columns(db: Session):
+#     return db.query(models.ProjectColumn).all()
 
 def get_all_columns_with_cards(db: Session):
     # return db.query(models.ProjectColumn).options(joinedload(models.ProjectColumn.cards)).filter(models.Card.parent_card_id == None).all() 
