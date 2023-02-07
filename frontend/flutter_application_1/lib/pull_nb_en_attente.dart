@@ -25,7 +25,16 @@ class _PullNbEnAttenteState extends State<PullNbEnAttente> {
           children: [
             Icon(Icons.warning_amber_rounded, size: 25),
             Text("Nombre de pull request en attente"),
-            Text("$nbPullRequestWaiting")
+            Container(
+                height: 30,
+                padding:
+                    const EdgeInsets.symmetric(vertical: 3, horizontal: 20),
+                decoration: BoxDecoration(
+                    border: Border.all(color: Colors.black54, width: 1.5),
+                    borderRadius: const BorderRadius.all(Radius.circular(20))),
+                child: Text("$nbPullRequestWaiting",
+                    style: const TextStyle(
+                        fontSize: 20, fontWeight: FontWeight.w700)))
           ]),
     ));
   }
