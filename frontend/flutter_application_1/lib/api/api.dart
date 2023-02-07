@@ -3,6 +3,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/api/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 
 
@@ -25,9 +26,12 @@ class Api {
       var encodedStart = Uri.encodeComponent(start_date);
       var encodedEnd = Uri.encodeComponent(end_date);
 
+      int project_id = await SharedApi.getProjectId();
+      String project_owner = await SharedApi.getProjectOwner();
+
       //http://127.0.0.1:5000/api/get_column_cards_by_time_range/Done%E2%9C%85?start_date=2023-02-03T23%3A57%3A35.154Z&end_date=2023-02-03T23%3A57%3A35.154Z&page_number=1&items_count=20
 
-      var finalUrl = "http://127.0.0.1:5000/api/get_column_cards_by_time_range/$encodedColumnName?start_date=$start_date&end_date=$end_date&page_number=1&items_count=20";
+      var finalUrl = "http://127.0.0.1:5000/api/get_column_cards_by_time_range/$project_id/$project_owner/$encodedColumnName?start_date=$start_date&end_date=$end_date&page_number=1&items_count=20";
       var url = Uri.parse(finalUrl);
 
       // add start_date and end_date to url query parameters
@@ -55,6 +59,37 @@ class Api {
       return Future.error("Is your internet connection working?");
     }
   }
+
+  Future<String> setProject(int project, String owner) async {
+    try {
+      var url = Uri.parse(
+          'http://127.0.0.1:5000/api/set_project/$project/$owner');
+
+      var headers = {
+        HttpHeaders.contentTypeHeader: 'application/json',
+        HttpHeaders.acceptHeader: 'application/json',
+      };
+
+      var response = await http.get(url, headers: headers).timeout(
+          const Duration(seconds: TIMEOUT_TIME));
+
+      print("Final getCurrentUser: $url");
+
+      if (response.statusCode == 200) {
+        print("Response: ${response.body}");
+        return response.body;
+      } else {
+        return Future.error("Is server running?");
+      }
+    }
+    on TimeoutException catch (_) {
+      return Future.error("Is server running?");
+    }
+    on SocketException catch (_) {
+      return Future.error("Is your internet connection working?");
+    }
+  }
+
 
 
 }
