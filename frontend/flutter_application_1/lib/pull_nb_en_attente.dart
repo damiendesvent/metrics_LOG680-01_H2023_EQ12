@@ -16,7 +16,6 @@ class _PullNbEnAttenteState extends State<PullNbEnAttente> {
   Widget build(BuildContext context) {
     return Card(
         child: Container(
-      width: double.maxFinite,
       padding: const EdgeInsets.all(15.0),
       child: Wrap(
           crossAxisAlignment: WrapCrossAlignment.center,
