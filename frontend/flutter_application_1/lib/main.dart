@@ -54,27 +54,42 @@ class _MyHomePageState extends State<MyHomePage> {
 
   late TextEditingController _projectController;
   late TextEditingController _ownerController ;
+  late TextEditingController _tokenController;
 
-  void getProjectInfos() async {
+  Future<String> getProjectInfos() async {
+    print("getProjectInfos called !");
+
     Uri graphQlUri = Uri.parse('https://api.github.com/graphql');
+
+    String query = "query{ user(login: \"${_ownerController.text}\") {  projectV2(number: ${_projectController.text}) { ... on ProjectV2 { items(first: 20) { nodes { fieldValues(last: 1) { nodes { ... on ProjectV2ItemFieldSingleSelectValue { name createdAt } } } content { ... on DraftIssue { title body } ... on Issue { __typename title state assignees(first: 10) { nodes { login } } } ... on PullRequest {__typename title state assignees(first: 10) { nodes { name } } } } creator { login } } } } } } } ";
 
     http.Response response = await http.post(graphQlUri,
         headers: {
-          'Authorization': 'Bearer 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',
+          'Authorization': 'Bearer ${_tokenController.text}', // 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
         },
         body: json.encode({
-          "query":
-          "query{ node(id: \"PVT_kwHOBme_us4AKmxQ\") { ... on ProjectV2 { items(first: 20) { nodes { fieldValues(last: 1) { nodes { ... on ProjectV2ItemFieldSingleSelectValue { name createdAt } } } content { ... on DraftIssue { title body } ... on Issue { __typename title state assignees(first: 10) { nodes { login } } } ... on PullRequest {__typename title state assignees(first: 10) { nodes { name } } } } creator { login } } } } } }"
+          "query": query,
         }));
+
+
     /*String response_body =
         '{ "data": { "node": { "items": { "nodes": [ { "fieldValues": { "nodes": [ { "name": "Done ✅", "createdAt": "2023-01-13T15:06:52Z" } ] }, "content": { "title": "Test issue", "assignees": { "nodes": [] } }, "creator": { "login": "elblogbruno" } }, { "fieldValues": { "nodes": [ { "name": "Done ✅", "createdAt": "2023-01-13T15:22:56Z" } ] }, "content": { "title": "test modèle issue", "assignees": { "nodes": [] } }, "creator": { "login": "damiendesvent" } }, { "fieldValues": { "nodes": [ { "name": "In progress 🛠️", "createdAt": "2023-01-18T15:00:36Z" } ] }, "content": { "title": "[FEATURE] Création de l\'UI de visualisation des métriques", "assignees": { "nodes": [ { "login": "Dorian-Perthuis" } ] } }, "creator": { "login": "damiendesvent" } }, { "fieldValues": { "nodes": [ { "name": "In progress 🛠️", "createdAt": "2023-01-23T00:19:11Z" } ] }, "content": { "title": "[FEATURE] Création des requêtes d\'import des métriques", "assignees": { "nodes": [ { "login": "damiendesvent" } ] } }, "creator": { "login": "damiendesvent" } }, { "fieldValues": { "nodes": [ { "name": "In progress 🛠️", "createdAt": "2023-01-18T15:02:49Z" } ] }, "content": { "title": "[FEATURE] Création de la base de données", "assignees": { "nodes": [ { "login": "elblogbruno" } ] } }, "creator": { "login": "damiendesvent" } }, { "fieldValues": { "nodes": [ { "name": "To do ⏲️", "createdAt": "2023-01-18T14:54:34Z" } ] }, "content": { "title": "[FEATURE] Création de l\'API Rest", "assignees": { "nodes": [] } }, "creator": { "login": "damiendesvent" } }, { "fieldValues": { "nodes": [ { "name": "Review 👀", "createdAt": "2023-01-23T00:25:59Z" } ] }, "content": { "title": "feat: started flutter project", "assignees": { "nodes": [] } }, "creator": { "login": "damiendesvent" } } ] } } } }';
     */
     if (response.body.isNotEmpty) {
       var items = json.decode(response.body);
+      print(items);
 
-      setState(() {
-        tasks = items['data']['node']['items']['nodes'];
-      });
+      if (items['message'] != null)
+      {
+          return Future.error(items['message']);
+      }
+
+      if (items['data']['user']['projectV2'] == null)
+      {
+        return Future.error("No project found");
+      }
+
+      tasks = items['data']['user']['projectV2']['items']['nodes'];
 
       //boucle permettant de remplir le tableau items avec les colonnes du kanban
       for (var task in tasks) {
@@ -85,18 +100,20 @@ class _MyHomePageState extends State<MyHomePage> {
           item['name'] == status ? columns.indexOf(item) : indexStatus;
         }
         if (indexStatus != -1) {
-          setState(() {
-            columns[indexStatus]['number'] += 1;
-          });
+          columns[indexStatus]['number'] += 1;
+
         } else {
-          setState(() {
-            columns.add({'name': status, 'number': 1});
-          });
+          columns.add({'name': status, 'number': 1});
         }
       }
+
       columns.sort((a, b) => b['number'].compareTo(
           a['number'])); //tri du plus grand nombre de tâches au plus petit
+
+      return "Project found";
     }
+
+    return Future.error("No project found");
   }
 
   @override
@@ -104,66 +121,127 @@ class _MyHomePageState extends State<MyHomePage> {
     super.initState();
     _projectController = TextEditingController();
     _ownerController = TextEditingController();
+    _tokenController = TextEditingController();
 
     // restore the values from the shared preferences
     SharedPreferences.getInstance().then((prefs) {
-      _projectController.text = prefs.getString('project_id') ?? '';
+      _projectController.text = prefs.getInt('project_id').toString() ?? '';
       _ownerController.text = prefs.getString('project_owner') ?? '';
+      _tokenController.text = prefs.getString('github_token') ?? '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';
+      //getProjectInfos();
     });
 
-    getProjectInfos();
+
   }
 
+  // @override
+  // Widget build(BuildContext context) => FutureBuilder(
+  //     future: getProjectInfos(),
+  //     builder: (context, snapshot) {
+  //       return Scaffold(
+  //           backgroundColor: const Color.fromRGBO(243, 243, 243, 1),
+  //           appBar: AppBar(
+  //             title: Text(widget.title),
+  //           ),
+  //           drawer: _buildDrawer(),
+  //           body: Container(
+  //               padding: const EdgeInsets.all(20.0),
+  //               child: snapshot.hasData && tasks.isNotEmpty
+  //                   ? _bodyWidgets.elementAt(_pageDisplayIndex)
+  //                   : const Center(child: CircularProgressIndicator())));
+  //     });
+
   @override
-  Widget build(BuildContext context) => FutureBuilder(
-      future: fetchData(),
-      builder: (context, snapshot) {
-        return Scaffold(
-            backgroundColor: const Color.fromRGBO(243, 243, 243, 1),
+  Widget build(BuildContext context) {
+    return Scaffold(
+        backgroundColor: const Color.fromRGBO(243, 243, 243, 1),
         appBar: AppBar(
-        title: Text(widget.title),
+          title: Text(widget.title),
         ),
-          drawer: Drawer(
-            child: ListView(
-              children: <Widget>[
-                Container(child: DrawerHeader(child: Text("$description"))),
-                Container(
-                  child: Column(children: <Widget>[
-                    ListTile(
-                        leading: Icon(Icons.task_rounded),
-                        title: Text("Tâches"),
-                        onTap: () {
-                          setState(() {
-                            _pageDisplayIndex = 0;
-                            Navigator.of(context).pop();
-                          });
-                        }),
-                    ListTile(
-                        leading: Icon(Icons.arrow_circle_down_rounded),
-                        title: Text("Pull requests"),
-                        onTap: () {
-                          setState(() {
-                            _pageDisplayIndex = 1;
-                            Navigator.of(context).pop();
-                          });
-                        }),
-                  ]),
-                ),
-                _buildProjectIdInput(),
+        drawer: _buildDrawer(),
+        body: DefaultTextStyle(
+      style: Theme.of(context).textTheme.displayMedium!,
+      textAlign: TextAlign.center,
+      child: FutureBuilder<String>(
+        future: getProjectInfos(), // a previously-obtained Future<String> or null
+        builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
+          List<Widget> children;
+          if (snapshot.hasData) {
+            return Container(
+                  padding: const EdgeInsets.all(20.0),
+                  child: tasks.isNotEmpty ? _bodyWidgets.elementAt(_pageDisplayIndex) : const Text('No project found'));
 
-              ],
+          } else if (snapshot.hasError) {
+            children = <Widget>[
+              const Icon(
+                Icons.error_outline,
+                color: Colors.red,
+                size: 60,
+              ),
+              Padding(
+                padding: const EdgeInsets.only(top: 16),
+                child: Text('Error: ${snapshot.error}'),
+              ),
+            ];
+          } else {
+            children = const <Widget>[
+              SizedBox(
+                width: 60,
+                height: 60,
+                child: CircularProgressIndicator(),
+              ),
+              Padding(
+                padding: EdgeInsets.only(top: 16),
+                child: Text('Awaiting result...'),
+              ),
+            ];
+          }
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: children,
             ),
-        ),
-            body: Container(
-                padding: const EdgeInsets.all(20.0),
-                child: snapshot.hasData && tasks.isNotEmpty
-                    ? _bodyWidgets.elementAt(_pageDisplayIndex)
-                    : const Center(child: CircularProgressIndicator())));
-      });
+          );
+        },
+      ),
+    ));
+  }
 
-  Future<bool> fetchData() => Future.delayed(const Duration(seconds: 1), () {
-    return true;
-  });
+
+  Widget _buildDrawer(){
+    return Drawer(
+      child: ListView(
+        children: <Widget>[
+          Container(
+              child: DrawerHeader(child: Text("$description"))),
+          Container(
+            child: Column(children: <Widget>[
+              ListTile(
+                  leading: Icon(Icons.task_rounded),
+                  title: Text("Tâches"),
+                  onTap: () {
+                    setState(() {
+                      _pageDisplayIndex = 0;
+                      Navigator.of(context).pop();
+                    });
+                  }),
+              ListTile(
+                  leading: Icon(Icons.arrow_circle_down_rounded),
+                  title: Text("Pull requests"),
+                  onTap: () {
+                    setState(() {
+                      _pageDisplayIndex = 1;
+                      Navigator.of(context).pop();
+                    });
+                  }),
+            ]),
+          ),
+          _buildProjectIdInput(),
+
+        ],
+      ),
+    );
+  }
 
   Widget _buildProjectIdInput(){
     // add an input to enter project id and owner name
@@ -173,6 +251,7 @@ class _MyHomePageState extends State<MyHomePage> {
       Padding (
         padding: const EdgeInsets.all(20.0),
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             TextField(
               controller: _projectController,
@@ -188,16 +267,22 @@ class _MyHomePageState extends State<MyHomePage> {
                 labelText: 'Owner Name',
               ),
             ),
+            TextField(
+              controller: _tokenController,
+              decoration: const InputDecoration(
+                border: OutlineInputBorder(),
+                labelText: 'Github Token',
+              ),
+            ),
             ElevatedButton(
               onPressed: () async {
-                SharedApi.saveProjectInfo(int.parse(_projectController.text), _ownerController.text);
-                await Api().setProject(int.parse(_projectController.text), _ownerController.text);
+                SharedApi.saveProjectInfo(int.parse(_projectController.text), _ownerController.text, _tokenController.text);
+                await Api().setProject(int.parse(_projectController.text), _ownerController.text, _tokenController.text);
 
-                getProjectInfos();
+                //getProjectInfos();
 
                 setState(() {
-                  _pageDisplayIndex = 0;
-                  Navigator.of(context).pop();
+
                 });
               },
               child: const Text('Save'),

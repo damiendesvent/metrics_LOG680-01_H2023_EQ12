@@ -31,7 +31,7 @@ class Api {
 
       //http://127.0.0.1:5000/api/get_column_cards_by_time_range/Done%E2%9C%85?start_date=2023-02-03T23%3A57%3A35.154Z&end_date=2023-02-03T23%3A57%3A35.154Z&page_number=1&items_count=20
 
-      var finalUrl = "http://127.0.0.1:5000/api/get_column_cards_by_time_range/$project_id/$project_owner/$encodedColumnName?start_date=$start_date&end_date=$end_date&page_number=1&items_count=20";
+      var finalUrl = "http://127.0.0.1:5000/api/get_column_cards_by_time_range/$project_owner/$project_id/$encodedColumnName?start_date=$start_date&end_date=$end_date&page_number=1&items_count=20";
       var url = Uri.parse(finalUrl);
 
       // add start_date and end_date to url query parameters
@@ -60,7 +60,7 @@ class Api {
     }
   }
 
-  Future<String> setProject(int project, String owner) async {
+  Future<String> setProject(int project, String owner, String githubToken) async {
     try {
       var url = Uri.parse(
           'http://127.0.0.1:5000/api/set_project/$project/$owner');

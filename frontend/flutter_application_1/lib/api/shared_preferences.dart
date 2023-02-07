@@ -9,10 +9,11 @@ class SharedApi {
     return SharedPreferences.getInstance();
   }
 
-  static saveProjectInfo(int project_id, String project_owner) async {
+  static saveProjectInfo(int project_id, String project_owner, String github_token) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.setInt('project_id', project_id);
     prefs.setString('project_owner', project_owner);
+    prefs.setString('github_token', github_token);
   }
 
   // make a function to get both project_id and project_owner from shared preferences
