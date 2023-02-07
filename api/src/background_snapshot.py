@@ -91,17 +91,22 @@ class Worker:
         continuous_thread.start()
         return cease_continuous_run
 
+
+    """
+        Creates a new column if it does not exist, otherwise it returns the existing one
+    """
     def create_column_if_not_exists(self, column_name):
         logging.info("Creating column {0} if not exists".format(column_name))
         
-        column = columns_utils.get_column_by_name(self.db, column_name)
+        column = columns_utils.get_column_by_name(self.db, column_name, self.project_owner, self.project_id)
         
         if column is None:
             logging.info("Column {0} does not exist, creating it".format(column_name))
 
             column_schema = src.schemas.ProjectColumn(
                 id=str(uuid.uuid4()),
-                project_id=3,
+                project_id=self.project_id,
+                project_owner=self.project_owner,
                 name=column_name,
                 cards=[],
                 created_at=datetime.now(),
@@ -113,6 +118,9 @@ class Worker:
 
         return column
 
+    """
+        Creates a new card if it does not exist, otherwise it returns the existing one
+    """
     def create_card_if_not_exists(self, card_json, column):
         logging.info("Creating card if not exists")
         logging.info(card_json['title'])
@@ -149,6 +157,7 @@ class Worker:
                 id=str(uuid.uuid4()),
                 parent_card_id=None,
                 project_id=self.project_id,
+                project_owner=self.project_owner,
                 column_id = column.id,
                 name = title,
                 content= content,
@@ -175,6 +184,7 @@ class Worker:
                 id=str(uuid.uuid4()),
                 parent_card_id=card.id,
                 project_id=self.project_id,
+                project_owner=self.project_owner,
                 column_id = column.id,
                 name = title,
                 content= content, # if the content changes we are able to store it updated on the snapshot
@@ -201,6 +211,7 @@ class Worker:
             card.state = state # if the card has state we update the state field
             card.pull_state = pull_state, # if the card has pull state we update the pull state field
             
+
             self.check_card_closed(card_json, card) # if the card is closed we calculate the lead time
 
             card.save(self.db) # we save the card to the database to update the column id

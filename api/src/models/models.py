@@ -19,6 +19,7 @@ def datetime_parser(o):
 class BaseModel(Base):
     __abstract__ = True
 
+    project_owner = Column(String(255), nullable=False)
     project_id = Column(Integer, nullable=False)
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     created_at = Column(DateTime, default=datetime.utcnow)

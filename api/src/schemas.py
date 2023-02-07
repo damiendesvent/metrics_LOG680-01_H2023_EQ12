@@ -6,6 +6,7 @@ from pydantic import BaseModel
 # from one column to another. We can also have a card in multiple snapshots, as a card can be moved from one snapshot to another.
 
 class Base(BaseModel):
+    project_owner: str
     project_id: int
     id: str
     created_at: datetime
