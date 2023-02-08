@@ -1,7 +1,12 @@
 #!/bin/sh
 # This is a generated file; do not edit or check into version control.
+<<<<<<< HEAD
+export "FLUTTER_ROOT=C:\flutter"
+export "FLUTTER_APPLICATION_PATH=C:\Users\doria\Desktop\metrics_LOG680-01_H2023_EQ12\metrics_frontend"
+=======
 export "FLUTTER_ROOT=/home/brunomoya/development/flutter"
 export "FLUTTER_APPLICATION_PATH=/home/brunomoya/Escritorio/Universidad/4r Año/ETS/LOG680/labo/metrics_LOG680-01_H2023_EQ12/metrics_frontend"
+>>>>>>> main
 export "COCOAPODS_PARALLEL_CODE_SIGN=true"
 export "FLUTTER_BUILD_DIR=build"
 export "FLUTTER_BUILD_NAME=1.0.0"
