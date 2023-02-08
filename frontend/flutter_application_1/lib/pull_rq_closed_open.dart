@@ -14,6 +14,16 @@ class _PullOpenCloseState extends State<PullOpenClose> {
 
   @override
   Widget build(BuildContext context) {
-    return Card();
+    return Card(
+        child: Container(
+            padding: const EdgeInsets.all(15.0),
+            child: Wrap(
+                crossAxisAlignment: WrapCrossAlignment.center,
+                alignment: WrapAlignment.spaceBetween,
+                children: [
+                  Icon(Icons.pie_chart_outline_rounded),
+                  Text(
+                      "Rapport entre le nombre de pull-request ouverte et fermé")
+                ])));
   }
 }
