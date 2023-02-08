@@ -39,6 +39,7 @@ class Worker:
         # Start the background thread
         self.stop_run_continuously = self.run_continuously()
         
+        self.github_token = github_token
         self.github_client = GithubClient(github_token)
         
         # # self.github_client.get_user('elblogbruno')
@@ -245,75 +246,87 @@ class Worker:
         else:
             logging.info("Card is not closed, not calculating lead time")
 
-    def set_project_info(self, project_id, project_owner):
+    def set_project_info(self, project_id, project_owner, github_token):
         self.project_id = project_id
         self.project_owner = project_owner
+        self.github_token = github_token
+
+        self.github_client = GithubClient(self.github_token)
 
     def snapshot(self):
         logging.info("Snapshotting...")
 
-        result = self.github_client.get_columns_for_project(self.project_id, self.project_owner) # we contact github to get the latest cards and columns
-        nodes = result['user']['projectV2']['items']['nodes']
+        try:
+            result = self.github_client.get_columns_for_project(self.project_id, self.project_owner) # we contact github to get the latest cards and columns
 
-        for node in nodes:
-            logging.info(node) # we log the node to see what we are getting from github
+            nodes = result['user']['projectV2']['items']['nodes']
 
-            card_json = node['content'] # we get the card json
-            
-            if len(card_json) == 0 or card_json is None: # if the card is empty we skip it
-                logging.info("Card is empty, maybe we snapshoted before the card was created")
-                continue
+            for node in nodes:
+                logging.info(node) # we log the node to see what we are getting from github
 
-            card_created_at = card_json['createdAt'] # we get the card created at date
+                if 'status' not in node: # if the card is not in a column we skip it
+                    logging.info("Card is not in a column, maybe we snapshoted before the card was created")
+                    continue
 
-            status = node['status'] # we get the status of the card, which contains the column name
-            # logging.info(status) # we log the status to see what we are getting from github
+                card_json = node['content'] # we get the card json
+                
+                if len(card_json) == 0 or card_json is None: # if the card is empty we skip it
+                    logging.info("Card is empty, maybe we snapshoted before the card was created")
+                    continue
 
-            column_name = status['column'] # we get the column name from the status
-            column_schema = self.create_column_if_not_exists(column_name) # we create the column if it does not exist on the database
+                card_created_at = card_json['createdAt'] # we get the card created at date
 
-            # calculate the difference between now and the last snapshot, checking which card has been moved
-            # if the card has been moved, we add it to the new column with a new id (we cant have two cards with the same id on the database)
+                status = node['status'] # we get the status of the card, which contains the column name
+                # logging.info(status) # we log the status to see what we are getting from github
 
-            if self.last_snapshot_json is not None:
-                last_snapshot_nodes = self.last_snapshot_json['user']['projectV2']['items']['nodes']
+                column_name = status['column'] # we get the column name from the status
+                column_schema = self.create_column_if_not_exists(column_name) # we create the column if it does not exist on the database
 
-                current_card_found = False # we use this to check if the card was found on the last snapshot
+                # calculate the difference between now and the last snapshot, checking which card has been moved
+                # if the card has been moved, we add it to the new column with a new id (we cant have two cards with the same id on the database)
 
-               
-                for last_snapshot_node in last_snapshot_nodes:
-                    last_snapshot_card_json = last_snapshot_node['content']
+                if self.last_snapshot_json is not None:
+                    last_snapshot_nodes = self.last_snapshot_json['user']['projectV2']['items']['nodes']
 
-                    if len(last_snapshot_card_json) == 0 or last_snapshot_card_json is None: # if the card is empty we skip it
-                        logging.info("Card is empty, maybe we snapshoted before the card was created")
-                        continue
+                    current_card_found = False # we use this to check if the card was found on the last snapshot
 
-                    last_snapshot_card_created_at = last_snapshot_card_json['createdAt']
-            
-                    if last_snapshot_card_created_at == card_created_at: # if the card was created at the same time, we check if the card has been moved to a different column
+                
+                    for last_snapshot_node in last_snapshot_nodes:
+                        last_snapshot_card_json = last_snapshot_node['content']
 
-                        # the card has been moved
-                        last_snapshot_status = last_snapshot_node['status']
-                        last_snapshot_column_name = last_snapshot_status['column']
+                        if len(last_snapshot_card_json) == 0 or last_snapshot_card_json is None: # if the card is empty we skip it
+                            logging.info("Card is empty, maybe we snapshoted before the card was created")
+                            continue
 
-                        if last_snapshot_column_name != column_name: 
-                            # the card has been moved to a different column
-                            logging.info("Card {0} has been moved from {1} to {2}".format(card_json['title'], last_snapshot_column_name, column_name))
+                        last_snapshot_card_created_at = last_snapshot_card_json['createdAt']
+                
+                        if last_snapshot_card_created_at == card_created_at: # if the card was created at the same time, we check if the card has been moved to a different column
 
-                            # we create the card in the new column with a new id that is related to the old id
-                            created_card = self.create_card_if_not_exists(card_json, column_schema)
-                            current_card_found = True 
-                            break
+                            # the card has been moved
+                            last_snapshot_status = last_snapshot_node['status']
+                            last_snapshot_column_name = last_snapshot_status['column']
+
+                            if last_snapshot_column_name != column_name: 
+                                # the card has been moved to a different column
+                                logging.info("Card {0} has been moved from {1} to {2}".format(card_json['title'], last_snapshot_column_name, column_name))
+
+                                # we create the card in the new column with a new id that is related to the old id
+                                created_card = self.create_card_if_not_exists(card_json, column_schema)
+                                current_card_found = True 
+                                break
 
 
-                # if we have a new card that was not in the last snapshot, we create it
-                if not current_card_found and cards_utils.get_card_by_content_and_created_at(self.db, card_json['bodyText'], card_created_at) is None:
-                    logging.info("New card {0} in column {1}".format(card_json['title'], column_name))
+                    # if we have a new card that was not in the last snapshot, we create it
+                    if not current_card_found and cards_utils.get_card_by_content_and_created_at(self.db, card_json['bodyText'], card_created_at) is None:
+                        logging.info("New card {0} in column {1}".format(card_json['title'], column_name))
+                        created_card = self.create_card_if_not_exists(card_json, column_schema)
+
+                else:
+                    logging.info("No last snapshot, creating card {0} in column {1}".format(card_json['title'], column_name))
                     created_card = self.create_card_if_not_exists(card_json, column_schema)
 
-            else:
-                logging.info("No last snapshot, creating card {0} in column {1}".format(card_json['title'], column_name))
-                created_card = self.create_card_if_not_exists(card_json, column_schema)
+        except Exception as e:
+            logging.error("Error while snapshotting: {0}".format(e))
 
         self.last_snapshot_json = result
 

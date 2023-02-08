@@ -62,9 +62,12 @@ async def add_process_time_header(request, call_next):
     return response 
 
 @app.get("/set_project/{project_id}/{project_owner}")
-async def set_project(project_id: int, project_owner: str):
-    worker.set_project_info(project_id, project_owner)
-    return {'status': 'ok'}
+async def set_project(project_id: int, project_owner: str, github_token: str):
+    try:
+        worker.set_project_info(project_id, project_owner, github_token)
+        return {'status': 'ok'}
+    except Exception as e:
+        return {'status': 'error', 'error': str(e)}
 
 if __name__ == "__main__":
     uvicorn.run(app, host='0.0.0.0', port=5000)
