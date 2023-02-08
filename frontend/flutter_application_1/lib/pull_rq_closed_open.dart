@@ -10,7 +10,8 @@ class PullOpenClose extends StatefulWidget {
 }
 
 class _PullOpenCloseState extends State<PullOpenClose> {
-  double closePourcentage = 0.2;
+  double closePourcentage =
+      0.2; //[0,1] : Cette valeur update automatique l'ui si elle est modifier.
   var redTextStyle = TextStyle(
       color: Color(0xffFF2F2F), fontWeight: FontWeight.w600, fontSize: 15);
   var greenTextStyle = TextStyle(
