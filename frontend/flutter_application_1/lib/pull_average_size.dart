@@ -14,9 +14,23 @@ class _PullAverageSizeState extends State<PullAverageSize> {
   Widget build(BuildContext context) {
     return Card(
         child: Container(
-            child: Wrap(children: [
-      Icon(Icons.format_line_spacing_rounded),
-      Text("Taille moyenne d'un pull request")
-    ])));
+            padding: EdgeInsets.all(15.0),
+            child:
+                Wrap(crossAxisAlignment: WrapCrossAlignment.center, children: [
+              Icon(Icons.format_line_spacing_rounded),
+              Text("Taille moyenne d'un pull request"),
+              Tooltip(
+                  message: "Somme de ligne modifié (Ajouté + supprimé)",
+                  child: Chip(
+                      backgroundColor: Colors.blue.shade100,
+                      avatar: const Icon(Icons.format_line_spacing_rounded),
+                      shape: RoundedRectangleBorder(
+                          borderRadius:
+                              const BorderRadius.all(Radius.circular(50))),
+                      label: Text(
+                        "500",
+                        style: const TextStyle(fontWeight: FontWeight.w600),
+                      )))
+            ])));
   }
 }
