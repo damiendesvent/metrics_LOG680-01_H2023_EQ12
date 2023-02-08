@@ -22,7 +22,7 @@ class _ColumnsNbTask extends State<ColumnsNbTask> {
                 spacing: 15,
                 children: const [
                   Icon(Icons.calculate_rounded, size: 25),
-                  Text("Nombre de tâche actif par colonne")
+                  Text("Tâches actives par colonne")
                 ]),
           )),
       const SizedBox(height: 3.0),

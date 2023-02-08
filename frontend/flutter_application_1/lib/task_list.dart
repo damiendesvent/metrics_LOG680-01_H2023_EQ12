@@ -37,7 +37,7 @@ class _TaskListState extends State<TaskList> {
         context: context,
         firstDate: DateTime(2020, 1, 1),
         lastDate: DateTime(2030, 12, 31),
-        initialDateRange:
+        initialDateRange: _selectedDateRange ??
             DateTimeRange(start: DateTime(2020, 1, 1), end: DateTime.now()),
         currentDate: DateTime.now(),
         saveText: 'Done',
@@ -191,7 +191,7 @@ class _TaskListState extends State<TaskList> {
             direction: Axis.horizontal,
             children: [
               const Icon(Icons.view_list_rounded, size: 25),
-              const Text(" Tâche de "),
+              const Text(" Tâches dans "),
               SizedBox(
                 width: 150.0,
                 child: DropdownButtonFormField(

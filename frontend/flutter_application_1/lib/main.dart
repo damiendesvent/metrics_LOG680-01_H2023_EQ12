@@ -72,7 +72,7 @@ class _MyHomePageState extends State<MyHomePage> {
     Uri graphQlUri = Uri.parse('https://api.github.com/graphql');
 
     String query =
-        "query{ user(login: \"${_ownerController.text}\") {  projectV2(number: ${_projectController.text}) { ... on ProjectV2 { items(first: 100) { nodes { fieldValues(last: 1) { nodes { ... on ProjectV2ItemFieldSingleSelectValue { name createdAt } } } content { ... on DraftIssue { title body } ... on Issue { __typename title state assignees(first: 10) { nodes { login } } } ... on PullRequest {__typename title state assignees(first: 10) { nodes { name } } } } creator { login } } } } } } } ";
+        "query{ user(login: \"${_ownerController.text}\") {  projectV2(number: ${_projectController.text}) { ... on ProjectV2 { items(first: 100) { nodes { fieldValues(last: 1) { nodes { ... on ProjectV2ItemFieldSingleSelectValue { name createdAt} } } content { ... on DraftIssue { title body } ... on Issue { __typename title state closedAt assignees(first: 10) { nodes { login } } } ... on PullRequest {__typename title state closedAt assignees(first: 10) { nodes { name } } } } creator { login } } } } } } } ";
 
     http.Response response = await http.post(graphQlUri,
         headers: {
