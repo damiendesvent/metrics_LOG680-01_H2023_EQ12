@@ -12,6 +12,11 @@ class PullAverageSize extends StatefulWidget {
 class _PullAverageSizeState extends State<PullAverageSize> {
   @override
   Widget build(BuildContext context) {
-    return Card(child: Container());
+    return Card(
+        child: Container(
+            child: Wrap(children: [
+      Icon(Icons.format_line_spacing_rounded),
+      Text("Taille moyenne d'un pull request")
+    ])));
   }
 }
