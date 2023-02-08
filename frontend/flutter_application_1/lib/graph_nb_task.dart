@@ -224,7 +224,7 @@ class _GraphNbTask extends State<GraphNbTask> {
                   tooltipBehavior: TooltipBehavior(
                       enable: true,
                       header: '',
-                      format: 'point.x : point.y tâches terminées'),
+                      format: 'point.x : point.y tâche(s) terminée(s)'),
                   series: <ChartSeries<ChartData, String>>[
                 ColumnSeries<ChartData, String>(
                     dataSource: chartData,

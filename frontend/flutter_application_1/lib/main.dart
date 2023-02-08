@@ -97,6 +97,7 @@ class _MyHomePageState extends State<MyHomePage> {
       tasks = items['data']['user']['projectV2']['items']['nodes'];
 
       //boucle permettant de remplir le tableau items avec les colonnes du kanban
+      columns.clear();
       for (var task in tasks) {
         String status = task['fieldValues']['nodes'][0]['name'];
         int indexStatus = -1;
