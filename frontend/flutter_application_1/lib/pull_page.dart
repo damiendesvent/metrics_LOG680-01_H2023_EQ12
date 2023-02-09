@@ -16,6 +16,21 @@ class PullPageLayout extends StatefulWidget {
 }
 
 class _PullPageLayout extends State<PullPageLayout> {
+  void getPullRequestsInfo() {
+    nbPullRequestWaiting = 0;
+    for (var task in tasks) {
+      if (task['content']['__typename'] == 'PullRequest') {
+        nbPullRequestWaiting += task['content']['state'] == 'OPEN' ? 1 : 0;
+      }
+    }
+  }
+
+  @override
+  void initState() {
+    getPullRequestsInfo();
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(children: [

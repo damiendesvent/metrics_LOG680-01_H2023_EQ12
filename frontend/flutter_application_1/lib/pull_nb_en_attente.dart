@@ -2,6 +2,8 @@ import 'dart:convert';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
+int nbPullRequestWaiting = 5;
+
 class PullNbEnAttente extends StatefulWidget {
   const PullNbEnAttente({super.key});
 
@@ -10,8 +12,6 @@ class PullNbEnAttente extends StatefulWidget {
 }
 
 class _PullNbEnAttenteState extends State<PullNbEnAttente> {
-  int nbPullRequestWaiting = 5;
-
   @override
   Widget build(BuildContext context) {
     return Card(
