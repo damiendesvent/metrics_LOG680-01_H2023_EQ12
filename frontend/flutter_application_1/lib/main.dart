@@ -58,6 +58,9 @@ class _MyHomePageState extends State<MyHomePage> {
 
   late Future<String>  _getGithubInitialData;
 
+  String _project = "";
+  String _owner = "";
+  String _token = "";
 
   Future<String> getProjectInfos(bool restoreFromPreferences) async {
     print("getProjectInfos called !");
@@ -69,6 +72,9 @@ class _MyHomePageState extends State<MyHomePage> {
         _ownerController.text = prefs.getString('project_owner') ?? 'damiendesvent';
         _tokenController.text = prefs.getString('github_token') ?? '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';
         //getProjectInfos();
+        _token = _tokenController.text;
+        _owner = _ownerController.text;
+        _project = _projectController.text;
       });
     }
 
@@ -320,6 +326,10 @@ class _MyHomePageState extends State<MyHomePage> {
                     await Api().setProject(int.parse(_projectController.text),
                         _ownerController.text, _tokenController.text);
 
+                    _token = _tokenController.text;
+                    _project = _projectController.text;
+                    _owner = _ownerController.text;
+
                     _getGithubInitialData = getProjectInfos(true);
 
                     setState(() {});
@@ -342,6 +352,12 @@ class _MyHomePageState extends State<MyHomePage> {
                       content: Text("${e} with project id ${_projectController.text} and owner name ${_ownerController.text}"),
                     ),
                   );
+
+                  // restore the project id and owner name
+                  _projectController.text = _project.toString();
+                  _ownerController.text = _owner;
+                  _tokenController.text = _token;
+
                 }
               },
               child: const Text('Save'),
