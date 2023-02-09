@@ -63,7 +63,11 @@ class Api {
   Future<String> setProject(int project, String owner, String githubToken) async {
     try {
       var url = Uri.parse(
-          'http://127.0.0.1:5000/api/set_project/$project/$owner');
+          'http://127.0.0.1:5000/set_project/$project/$owner&github_token=$githubToken');
+
+      // url.queryParameters.addAll({
+      //   'github_token': githubToken,
+      // });
 
       var headers = {
         HttpHeaders.contentTypeHeader: 'application/json',
