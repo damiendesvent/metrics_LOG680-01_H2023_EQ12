@@ -2,8 +2,8 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/api/shared_preferences.dart';
-import 'package:flutter_application_1/task_page.dart';
-import 'package:flutter_application_1/pull_page.dart';
+import 'package:flutter_application_1/widgets/tasks_page/task_page.dart';
+import 'package:flutter_application_1/widgets/pull_requests_page/pull_page.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
