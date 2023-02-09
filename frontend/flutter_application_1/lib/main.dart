@@ -54,22 +54,46 @@ class _MyHomePageState extends State<MyHomePage> {
     const PullPageLayout()
   ];
 
-  late TextEditingController _projectController;
-  late TextEditingController _ownerController;
-  late TextEditingController _tokenController;
+  late TextEditingController _projectController = TextEditingController();
+  late TextEditingController _ownerController = TextEditingController();
+  late TextEditingController _tokenController = TextEditingController();
 
-  Future<String> getProjectInfos() async {
-    print("getProjectInfos called !");
+  late Future<String> _getGithubInitialData;
+
+  String _project = "";
+  String _owner = "";
+  String _token = "";
+
+  Future<String> getProjectInfos(bool restoreFromPreferences) async {
+    print("getProjectInfos called with $restoreFromPreferences");
+
+    if (restoreFromPreferences) {
+      // restore the values from the shared preferences //applique le projet par défaut si aucun projet n'est donné
+      await SharedApi.getInstance().then((prefs) {
+        _projectController.text =
+            (prefs.getInt('project_id') ?? '3').toString();
+        _ownerController.text =
+            prefs.getString('project_owner') ?? 'damiendesvent';
+        _tokenController.text = prefs.getString('github_token') ??
+            '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';
+        //getProjectInfos();
+        _token = _tokenController.text;
+        _owner = _ownerController.text;
+        _project = _projectController.text;
+      });
+    }
+
+    print(_projectController.text);
 
     //applique le projet par défaut si aucun projet n'est donné
-    if (_projectController.text.isEmpty &&
-        _ownerController.text.isEmpty &&
-        _tokenController.text.isEmpty) {
-      _projectController = TextEditingController(text: '3');
-      _ownerController = TextEditingController(text: 'damiendesvent');
-      _tokenController = TextEditingController(
-          text: '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');
-    }
+    // if (_projectController.text.isEmpty &&
+    //     _ownerController.text.isEmpty &&
+    //     _tokenController.text.isEmpty) {
+    //   _projectController = TextEditingController(text: '3');
+    //   _ownerController = TextEditingController(text: 'damiendesvent');
+    //   _tokenController = TextEditingController(
+    //       text: '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');
+    // }
 
     Uri graphQlUri = Uri.parse('https://api.github.com/graphql');
 
@@ -84,8 +108,15 @@ class _MyHomePageState extends State<MyHomePage> {
           "query": query,
         }));
 
+    print(query);
+
     if (response.body.isNotEmpty) {
       var items = json.decode(response.body);
+      //print(items);
+
+      if (items['errors'] != null) {
+        return Future.error(items['errors'][0]['message']);
+      }
 
       if (items['message'] != null) {
         return Future.error(items['message']);
@@ -119,24 +150,31 @@ class _MyHomePageState extends State<MyHomePage> {
       return "Project found";
     }
 
-    return Future.error("No project found");
+    return "No project found";
   }
 
   @override
   void initState() {
     super.initState();
-    _projectController = TextEditingController(text: '3');
-    _ownerController = TextEditingController(text: 'damiendesvent');
-    _tokenController =
-        TextEditingController(text: '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');
-
-    // restore the values from the shared preferences
-    SharedPreferences.getInstance().then((prefs) {
-      _projectController.text = (prefs.getInt('project_id') ?? '').toString();
-      _ownerController.text = prefs.getString('project_owner') ?? '';
-      _tokenController.text = prefs.getString('github_token') ?? '';
-    });
+    _getGithubInitialData = getProjectInfos(true);
   }
+
+  // @override
+  // Widget build(BuildContext context) => FutureBuilder(
+  //     future: getProjectInfos(),
+  //     builder: (context, snapshot) {
+  //       return Scaffold(
+  //           backgroundColor: const Color.fromRGBO(243, 243, 243, 1),
+  //           appBar: AppBar(
+  //             title: Text(widget.title),
+  //           ),
+  //           drawer: _buildDrawer(),
+  //           body: Container(
+  //               padding: const EdgeInsets.all(20.0),
+  //               child: snapshot.hasData && tasks.isNotEmpty
+  //                   ? _bodyWidgets.elementAt(_pageDisplayIndex)
+  //                   : const Center(child: CircularProgressIndicator())));
+  //     });
 
   @override
   Widget build(BuildContext context) {
@@ -151,7 +189,7 @@ class _MyHomePageState extends State<MyHomePage> {
           textAlign: TextAlign.center,
           child: FutureBuilder<String>(
             future:
-                getProjectInfos(), // a previously-obtained Future<String> or null
+                _getGithubInitialData, // a previously-obtained Future<String> or null
             builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
               List<Widget> children;
               if (snapshot.hasData) {
@@ -255,12 +293,11 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
           spacing,
           TextField(
-            controller: _ownerController,
-            decoration: const InputDecoration(
-              border: OutlineInputBorder(),
-              labelText: 'Owner Name',
-            ),
-          ),
+              controller: _ownerController,
+              decoration: const InputDecoration(
+                border: OutlineInputBorder(),
+                labelText: 'Owner Name',
+              )),
           spacing,
           TextField(
             obscureText: true,
@@ -273,14 +310,73 @@ class _MyHomePageState extends State<MyHomePage> {
           spacing,
           ElevatedButton(
             onPressed: () async {
-              SharedApi.saveProjectInfo(int.parse(_projectController.text),
-                  _ownerController.text, _tokenController.text);
-              await Api().setProject(int.parse(_projectController.text),
-                  _ownerController.text, _tokenController.text);
+              // check if the given project id and owner name are valid
+              // and fetch the data from github
+              try {
+                String result = await getProjectInfos(
+                    false); // false means that the data is not fetched from the shared preferences
 
-              getProjectInfos();
+                print(result);
 
-              setState(() {});
+                if (result == 'Project found') {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                          "Changing to project ${_projectController.text}"),
+                    ),
+                  );
+
+                  // if the project is found, save the project id and owner name
+                  // in the shared preferences
+                  SharedApi.saveProjectInfo(int.parse(_projectController.text),
+                      _ownerController.text, _tokenController.text);
+
+                  await Api().setProject(int.parse(_projectController.text),
+                      _ownerController.text, _tokenController.text);
+
+                  _token = _tokenController.text;
+                  _project = _projectController.text;
+                  _owner = _ownerController.text;
+
+                  //_getGithubInitialData = getProjectInfos(true);
+
+                  // close the drawer
+                  Navigator.of(context).pop();
+
+                  setState(() {
+                    //_getGithubInitialData = getProjectInfos(true);
+                    print("State set");
+                    tasks.clear();
+                    columns.clear();
+
+                    _getGithubInitialData = getProjectInfos(true);
+                  });
+                } else {
+                  print("Error: $result");
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                          "$result with project id ${_projectController.text} and owner name ${_ownerController.text}"),
+                    ),
+                  );
+                }
+              } catch (e) {
+                // close the drawer
+                Navigator.of(context).pop();
+                print("Error catched: $e");
+
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                        "${e} with project id ${_projectController.text} and owner name ${_ownerController.text}"),
+                  ),
+                );
+
+                // restore the project id and owner name
+                _projectController.text = _project.toString();
+                _ownerController.text = _owner;
+                _tokenController.text = _token;
+              }
             },
             child: const Text('Save'),
           ),
