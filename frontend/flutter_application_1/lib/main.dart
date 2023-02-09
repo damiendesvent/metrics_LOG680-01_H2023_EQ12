@@ -1,9 +1,7 @@
 // ignore_for_file: avoid_print
 
 import 'package:flutter/material.dart';
-import 'package:flutter_application_1/columns_nb_task.dart';
 import 'package:flutter_application_1/api/shared_preferences.dart';
-import 'package:flutter_application_1/task_list.dart';
 import 'package:flutter_application_1/task_page.dart';
 import 'package:flutter_application_1/pull_page.dart';
 import 'dart:convert';
@@ -11,7 +9,6 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'api/api.dart';
-import 'graph_nb_task.dart';
 
 List tasks = [];
 List<Map> columns = [];
@@ -139,26 +136,8 @@ class _MyHomePageState extends State<MyHomePage> {
       _projectController.text = (prefs.getInt('project_id') ?? '').toString();
       _ownerController.text = prefs.getString('project_owner') ?? '';
       _tokenController.text = prefs.getString('github_token') ?? '';
-      //getProjectInfos();
     });
   }
-
-  // @override
-  // Widget build(BuildContext context) => FutureBuilder(
-  //     future: getProjectInfos(),
-  //     builder: (context, snapshot) {
-  //       return Scaffold(
-  //           backgroundColor: const Color.fromRGBO(243, 243, 243, 1),
-  //           appBar: AppBar(
-  //             title: Text(widget.title),
-  //           ),
-  //           drawer: _buildDrawer(),
-  //           body: Container(
-  //               padding: const EdgeInsets.all(20.0),
-  //               child: snapshot.hasData && tasks.isNotEmpty
-  //                   ? _bodyWidgets.elementAt(_pageDisplayIndex)
-  //                   : const Center(child: CircularProgressIndicator())));
-  //     });
 
   @override
   Widget build(BuildContext context) {
@@ -222,7 +201,7 @@ class _MyHomePageState extends State<MyHomePage> {
     return Drawer(
       child: ListView(
         children: <Widget>[
-          DrawerHeader(child: Text(description, style: TextStyle(),)),
+          DrawerHeader(child: Text(description)),
           Column(children: <Widget>[
             ListTile(
                 selected: _pageDisplayIndex == 0,
