@@ -1,7 +1,7 @@
+// ignore_for_file: avoid_print
+
 import 'package:flutter/material.dart';
-import 'package:flutter_application_1/columns_nb_task.dart';
 import 'package:flutter_application_1/api/shared_preferences.dart';
-import 'package:flutter_application_1/task_list.dart';
 import 'package:flutter_application_1/task_page.dart';
 import 'package:flutter_application_1/pull_page.dart';
 import 'dart:convert';
@@ -9,7 +9,6 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'api/api.dart';
-import 'graph_nb_task.dart';
 
 List tasks = [];
 List<Map> columns = [];
@@ -50,7 +49,10 @@ class _MyHomePageState extends State<MyHomePage> {
 
   int _pageDisplayIndex =
       0; //'0' for the project tasks page and '1' for the pull requests page.
-  final List<Widget> _bodyWidgets = [TasksPageLayout(), PullPageLayout()];
+  final List<Widget> _bodyWidgets = [
+    const TasksPageLayout(),
+    const PullPageLayout()
+  ];
 
   late TextEditingController _projectController;
   late TextEditingController _ownerController;
@@ -124,35 +126,18 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     super.initState();
-    _projectController = TextEditingController();
-    _ownerController = TextEditingController();
-    _tokenController = TextEditingController();
+    _projectController = TextEditingController(text: '3');
+    _ownerController = TextEditingController(text: 'damiendesvent');
+    _tokenController =
+        TextEditingController(text: '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');
 
     // restore the values from the shared preferences
     SharedPreferences.getInstance().then((prefs) {
       _projectController.text = (prefs.getInt('project_id') ?? '').toString();
       _ownerController.text = prefs.getString('project_owner') ?? '';
       _tokenController.text = prefs.getString('github_token') ?? '';
-      //getProjectInfos();
     });
   }
-
-  // @override
-  // Widget build(BuildContext context) => FutureBuilder(
-  //     future: getProjectInfos(),
-  //     builder: (context, snapshot) {
-  //       return Scaffold(
-  //           backgroundColor: const Color.fromRGBO(243, 243, 243, 1),
-  //           appBar: AppBar(
-  //             title: Text(widget.title),
-  //           ),
-  //           drawer: _buildDrawer(),
-  //           body: Container(
-  //               padding: const EdgeInsets.all(20.0),
-  //               child: snapshot.hasData && tasks.isNotEmpty
-  //                   ? _bodyWidgets.elementAt(_pageDisplayIndex)
-  //                   : const Center(child: CircularProgressIndicator())));
-  //     });
 
   @override
   Widget build(BuildContext context) {
@@ -216,29 +201,37 @@ class _MyHomePageState extends State<MyHomePage> {
     return Drawer(
       child: ListView(
         children: <Widget>[
-          Container(child: DrawerHeader(child: Text("$description"))),
-          Container(
-            child: Column(children: <Widget>[
-              ListTile(
-                  leading: Icon(Icons.task_rounded),
-                  title: Text("Tâches"),
-                  onTap: () {
-                    setState(() {
-                      _pageDisplayIndex = 0;
-                      Navigator.of(context).pop();
-                    });
-                  }),
-              ListTile(
-                  leading: Icon(Icons.arrow_circle_down_rounded),
-                  title: Text("Pull requests"),
-                  onTap: () {
-                    setState(() {
-                      _pageDisplayIndex = 1;
-                      Navigator.of(context).pop();
-                    });
-                  }),
-            ]),
-          ),
+          DrawerHeader(child: Text(description)),
+          Column(children: <Widget>[
+            ListTile(
+                selected: _pageDisplayIndex == 0,
+                leading: const Icon(Icons.task_rounded),
+                title: Text("Tâches",
+                    style: TextStyle(
+                        fontWeight: _pageDisplayIndex == 0
+                            ? FontWeight.bold
+                            : FontWeight.normal)),
+                onTap: () {
+                  setState(() {
+                    _pageDisplayIndex = 0;
+                    Navigator.of(context).pop();
+                  });
+                }),
+            ListTile(
+                selected: _pageDisplayIndex == 1,
+                leading: const Icon(Icons.arrow_circle_down_rounded),
+                title: Text("Pull requests",
+                    style: TextStyle(
+                        fontWeight: _pageDisplayIndex == 1
+                            ? FontWeight.bold
+                            : FontWeight.normal)),
+                onTap: () {
+                  setState(() {
+                    _pageDisplayIndex = 1;
+                    Navigator.of(context).pop();
+                  });
+                }),
+          ]),
           _buildProjectIdInput(),
         ],
       ),
@@ -248,48 +241,51 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget _buildProjectIdInput() {
     // add an input to enter project id and owner name
     // and a button to fetch the data from github
-    return Container(
-      child: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            TextField(
-              controller: _projectController,
-              decoration: const InputDecoration(
-                border: OutlineInputBorder(),
-                labelText: 'Project ID',
-              ),
+    const Widget spacing = SizedBox(height: 10);
+    return Padding(
+      padding: const EdgeInsets.all(20.0),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          TextField(
+            controller: _projectController,
+            decoration: const InputDecoration(
+              border: OutlineInputBorder(),
+              labelText: 'Project ID',
             ),
-            TextField(
-              controller: _ownerController,
-              decoration: const InputDecoration(
-                border: OutlineInputBorder(),
-                labelText: 'Owner Name',
-              ),
+          ),
+          spacing,
+          TextField(
+            controller: _ownerController,
+            decoration: const InputDecoration(
+              border: OutlineInputBorder(),
+              labelText: 'Owner Name',
             ),
-            TextField(
-              controller: _tokenController,
-              decoration: const InputDecoration(
-                border: OutlineInputBorder(),
-                labelText: 'Github Token',
-              ),
+          ),
+          spacing,
+          TextField(
+            obscureText: true,
+            controller: _tokenController,
+            decoration: const InputDecoration(
+              border: OutlineInputBorder(),
+              labelText: 'Github Token',
             ),
-            ElevatedButton(
-              onPressed: () async {
-                SharedApi.saveProjectInfo(int.parse(_projectController.text),
-                    _ownerController.text, _tokenController.text);
-                await Api().setProject(int.parse(_projectController.text),
-                    _ownerController.text, _tokenController.text);
+          ),
+          spacing,
+          ElevatedButton(
+            onPressed: () async {
+              SharedApi.saveProjectInfo(int.parse(_projectController.text),
+                  _ownerController.text, _tokenController.text);
+              await Api().setProject(int.parse(_projectController.text),
+                  _ownerController.text, _tokenController.text);
 
-                //getProjectInfos();
+              getProjectInfos();
 
-                setState(() {});
-              },
-              child: const Text('Save'),
-            ),
-          ],
-        ),
+              setState(() {});
+            },
+            child: const Text('Save'),
+          ),
+        ],
       ),
     );
   }
