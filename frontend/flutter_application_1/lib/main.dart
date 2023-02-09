@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print
+
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/columns_nb_task.dart';
 import 'package:flutter_application_1/api/shared_preferences.dart';
@@ -50,7 +52,10 @@ class _MyHomePageState extends State<MyHomePage> {
 
   int _pageDisplayIndex =
       0; //'0' for the project tasks page and '1' for the pull requests page.
-  final List<Widget> _bodyWidgets = [TasksPageLayout(), PullPageLayout()];
+  final List<Widget> _bodyWidgets = [
+    const TasksPageLayout(),
+    const PullPageLayout()
+  ];
 
   late TextEditingController _projectController;
   late TextEditingController _ownerController;
@@ -68,7 +73,7 @@ class _MyHomePageState extends State<MyHomePage> {
       _tokenController = TextEditingController(
           text: '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');
     }
-    print(_ownerController.text);
+
     Uri graphQlUri = Uri.parse('https://api.github.com/graphql');
 
     String query =
@@ -217,29 +222,37 @@ class _MyHomePageState extends State<MyHomePage> {
     return Drawer(
       child: ListView(
         children: <Widget>[
-          Container(child: DrawerHeader(child: Text("$description"))),
-          Container(
-            child: Column(children: <Widget>[
-              ListTile(
-                  leading: Icon(Icons.task_rounded),
-                  title: Text("Tâches"),
-                  onTap: () {
-                    setState(() {
-                      _pageDisplayIndex = 0;
-                      Navigator.of(context).pop();
-                    });
-                  }),
-              ListTile(
-                  leading: Icon(Icons.arrow_circle_down_rounded),
-                  title: Text("Pull requests"),
-                  onTap: () {
-                    setState(() {
-                      _pageDisplayIndex = 1;
-                      Navigator.of(context).pop();
-                    });
-                  }),
-            ]),
-          ),
+          DrawerHeader(child: Text(description, style: TextStyle(),)),
+          Column(children: <Widget>[
+            ListTile(
+                selected: _pageDisplayIndex == 0,
+                leading: const Icon(Icons.task_rounded),
+                title: Text("Tâches",
+                    style: TextStyle(
+                        fontWeight: _pageDisplayIndex == 0
+                            ? FontWeight.bold
+                            : FontWeight.normal)),
+                onTap: () {
+                  setState(() {
+                    _pageDisplayIndex = 0;
+                    Navigator.of(context).pop();
+                  });
+                }),
+            ListTile(
+                selected: _pageDisplayIndex == 1,
+                leading: const Icon(Icons.arrow_circle_down_rounded),
+                title: Text("Pull requests",
+                    style: TextStyle(
+                        fontWeight: _pageDisplayIndex == 1
+                            ? FontWeight.bold
+                            : FontWeight.normal)),
+                onTap: () {
+                  setState(() {
+                    _pageDisplayIndex = 1;
+                    Navigator.of(context).pop();
+                  });
+                }),
+          ]),
           _buildProjectIdInput(),
         ],
       ),
@@ -250,52 +263,50 @@ class _MyHomePageState extends State<MyHomePage> {
     // add an input to enter project id and owner name
     // and a button to fetch the data from github
     const Widget spacing = SizedBox(height: 10);
-    return Container(
-      child: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            TextField(
-              controller: _projectController,
-              decoration: const InputDecoration(
-                border: OutlineInputBorder(),
-                labelText: 'Project ID',
-              ),
+    return Padding(
+      padding: const EdgeInsets.all(20.0),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          TextField(
+            controller: _projectController,
+            decoration: const InputDecoration(
+              border: OutlineInputBorder(),
+              labelText: 'Project ID',
             ),
-            spacing,
-            TextField(
-              controller: _ownerController,
-              decoration: const InputDecoration(
-                border: OutlineInputBorder(),
-                labelText: 'Owner Name',
-              ),
+          ),
+          spacing,
+          TextField(
+            controller: _ownerController,
+            decoration: const InputDecoration(
+              border: OutlineInputBorder(),
+              labelText: 'Owner Name',
             ),
-            spacing,
-            TextField(
-              obscureText: true,
-              controller: _tokenController,
-              decoration: const InputDecoration(
-                border: OutlineInputBorder(),
-                labelText: 'Github Token',
-              ),
+          ),
+          spacing,
+          TextField(
+            obscureText: true,
+            controller: _tokenController,
+            decoration: const InputDecoration(
+              border: OutlineInputBorder(),
+              labelText: 'Github Token',
             ),
-            spacing,
-            ElevatedButton(
-              onPressed: () async {
-                SharedApi.saveProjectInfo(int.parse(_projectController.text),
-                    _ownerController.text, _tokenController.text);
-                await Api().setProject(int.parse(_projectController.text),
-                    _ownerController.text, _tokenController.text);
+          ),
+          spacing,
+          ElevatedButton(
+            onPressed: () async {
+              SharedApi.saveProjectInfo(int.parse(_projectController.text),
+                  _ownerController.text, _tokenController.text);
+              await Api().setProject(int.parse(_projectController.text),
+                  _ownerController.text, _tokenController.text);
 
-                getProjectInfos();
+              getProjectInfos();
 
-                setState(() {});
-              },
-              child: const Text('Save'),
-            ),
-          ],
-        ),
+              setState(() {});
+            },
+            child: const Text('Save'),
+          ),
+        ],
       ),
     );
   }
