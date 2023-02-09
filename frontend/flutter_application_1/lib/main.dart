@@ -63,7 +63,7 @@ class _MyHomePageState extends State<MyHomePage> {
   String _token = "";
 
   Future<String> getProjectInfos(bool restoreFromPreferences) async {
-    print("getProjectInfos called !");
+    print("getProjectInfos called with $restoreFromPreferences");
 
     if (restoreFromPreferences) {
       // restore the values from the shared preferences //applique le projet par défaut si aucun projet n'est donné
@@ -152,9 +152,6 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     super.initState();
-
-
-
     _getGithubInitialData = getProjectInfos(true);
   }
 
@@ -305,8 +302,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 try {
                   String result = await getProjectInfos(false); // false means that the data is not fetched from the shared preferences
 
-                  // close the drawer
-                  Navigator.of(context).pop();
+
 
                   print(result);
 
@@ -314,7 +310,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: Text("Changes saved to project ${_projectController.text}"),
+                        content: Text("Changing to project ${_projectController.text}"),
                       ),
                     );
 
@@ -330,9 +326,19 @@ class _MyHomePageState extends State<MyHomePage> {
                     _project = _projectController.text;
                     _owner = _ownerController.text;
 
-                    _getGithubInitialData = getProjectInfos(true);
+                    //_getGithubInitialData = getProjectInfos(true);
 
-                    setState(() {});
+                    // close the drawer
+                    Navigator.of(context).pop();
+
+                    setState(() {
+                      //_getGithubInitialData = getProjectInfos(true);
+                      print("State set");
+                      tasks.clear();
+                      columns.clear();
+
+                      _getGithubInitialData = getProjectInfos(true);
+                    });
                   }
                   else {
                     print("Error: $result");
@@ -347,6 +353,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   // close the drawer
                   Navigator.of(context).pop();
                   print("Error catched: $e");
+
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text("${e} with project id ${_projectController.text} and owner name ${_ownerController.text}"),
