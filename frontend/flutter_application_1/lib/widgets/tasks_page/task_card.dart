@@ -32,6 +32,12 @@ class TaskCard extends StatelessWidget {
       creatorName = task['creator']['login'];
       createdAt = task['fieldValues']['nodes'][0]['createdAt'].substring(
           0, task['fieldValues']['nodes'][0]['createdAt'].indexOf('T'));
+
+      //met une chip pour la personne qui a merge la PR
+      if (taskType == '- PullRequest' && status == 'MERGED') {
+        chipNames
+            .add('Mergé par ${task['content']['mergedBy']['login'] ?? ''}');
+      }
     } else {
       // decode task name to utf8 to display emojis correctly
       taskName = utf8.decode(task['name'].toString().codeUnits);
