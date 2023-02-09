@@ -97,7 +97,7 @@ class _PullAverageCommentsState extends State<PullAverageComments> {
                 crossAxisAlignment: WrapCrossAlignment.center,
                 spacing: 15,
                 children: [
-                  const Icon(Icons.calendar_month_rounded, size: 25),
+                  const Icon(Icons.comment_rounded, size: 25),
                   const Text("Nombre de commentaires moyen par"),
                   SizedBox(
                     width: 90.0,
