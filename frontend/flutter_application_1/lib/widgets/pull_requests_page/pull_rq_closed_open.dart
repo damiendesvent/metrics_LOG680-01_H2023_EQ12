@@ -39,7 +39,8 @@ class _PullOpenCloseState extends State<PullOpenClose> {
                     crossAxisAlignment: WrapCrossAlignment.center,
                     spacing: 5,
                     children: [
-                      Text("${(closePourcentage) * 100}%", style: redTextStyle),
+                      Text("${((closePourcentage) * 100).round()} %",
+                          style: redTextStyle),
                       DecoratedBox(
                           decoration: BoxDecoration(
                             borderRadius:
@@ -61,7 +62,7 @@ class _PullOpenCloseState extends State<PullOpenClose> {
                                 ]),
                           ),
                           child: const SizedBox(height: 20, width: 320)),
-                      Text("${(1 - closePourcentage) * 100}%",
+                      Text("${((1 - closePourcentage) * 100).round()} %",
                           style: greenTextStyle)
                     ],
                   )
