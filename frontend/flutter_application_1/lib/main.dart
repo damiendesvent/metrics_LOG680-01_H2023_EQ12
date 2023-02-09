@@ -86,7 +86,6 @@ class _MyHomePageState extends State<MyHomePage> {
 
     if (response.body.isNotEmpty) {
       var items = json.decode(response.body);
-      print(items);
 
       if (items['message'] != null) {
         return Future.error(items['message']);

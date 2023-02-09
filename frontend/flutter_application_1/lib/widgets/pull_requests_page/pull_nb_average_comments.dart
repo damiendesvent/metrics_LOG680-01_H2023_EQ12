@@ -2,6 +2,23 @@ import 'dart:convert';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
+import '../../main.dart';
+
+List<String> samplings = ['jour', 'semaine', 'mois'];
+List<String> months = [
+  'janvier',
+  'février',
+  'mars',
+  'avril',
+  'mai',
+  'juin',
+  'juillet',
+  'août',
+  'septembre',
+  'octobre',
+  'novembre',
+  'décembre'
+];
 
 class PullAverageComments extends StatefulWidget {
   const PullAverageComments({super.key});
@@ -14,11 +31,69 @@ class _PullAverageCommentsState extends State<PullAverageComments> {
   DateTimeRange _selectedDateRange =
       DateTimeRange(start: DateTime(2020, 01, 01), end: DateTime(2040, 01, 01));
 
-  var dropValue = ["drop1", "drop2", "drop3"];
   bool maxPeriod = true;
+  String sampling = samplings.first;
   String dateString = "sur toute la période";
   List<ChartData> chartData = [];
-  int averageComments = 5;
+  double averageComments = 5;
+
+  void setAverageCommentsGraph() {
+    chartData.clear();
+    List selectedPullRequests = [];
+    Map sumPerSampling = {};
+    Map nbPerSampling = {};
+    for (var task in tasks) {
+      String closedAt = task['content']['closedAt'] ?? '';
+      if (closedAt.isNotEmpty &&
+          _selectedDateRange.start.isBefore(DateTime.parse(closedAt)) &&
+          _selectedDateRange.end.isAfter(
+              DateTime.parse(closedAt).subtract(const Duration(days: 1))) &&
+          task['content']['__typename'] == 'PullRequest') {
+        selectedPullRequests.add({
+          'closedAt': closedAt,
+          'comments': task['content']['totalCommentsCount']
+        });
+      }
+      selectedPullRequests.sort((a, b) => DateTime.parse(a['closedAt'])
+          .compareTo(DateTime.parse(b['closedAt'])));
+    }
+    for (var item in selectedPullRequests) {
+      String closedAt = item['closedAt'];
+      switch (sampling) {
+        case "jour":
+          DateTime closedAtDate = DateTime.parse(closedAt);
+          closedAt =
+              '${closedAtDate.day} ${months[closedAtDate.month - 1]} ${closedAtDate.year}';
+          break;
+        case "semaine":
+          int weekDay = DateTime.parse(closedAt).weekday;
+          DateTime mondayClosedAt =
+              DateTime.parse(closedAt).subtract(Duration(days: weekDay - 1));
+          closedAt =
+              'semaine du ${mondayClosedAt.day} ${months[mondayClosedAt.month - 1]}';
+          break;
+        case "mois":
+          closedAt = months[DateTime.parse(closedAt).month - 1];
+          break;
+      }
+      if (sumPerSampling.containsKey(closedAt)) {
+        sumPerSampling[closedAt] += item['comments'];
+        nbPerSampling[closedAt]++;
+      } else {
+        sumPerSampling[closedAt] = item['comments'];
+        nbPerSampling[closedAt] = 1;
+      }
+    }
+    sumPerSampling.forEach((key, value) => chartData.add(ChartData(key,
+        value / nbPerSampling[key], '${nbPerSampling[key]} pull request')));
+
+    //calculer somme des taches terminees
+    num sum = 0;
+    sumPerSampling.forEach((key, value) => sum += value);
+    setState(() {
+      averageComments = sum / selectedPullRequests.length;
+    });
+  }
 
   final ButtonStyle style = ElevatedButton.styleFrom(
     textStyle: const TextStyle(fontSize: 20),
@@ -46,7 +121,7 @@ class _PullAverageCommentsState extends State<PullAverageComments> {
     }
     _dateString(_selectedDateRange.start, _selectedDateRange.end, "Specific");
     maxPeriod = false;
-    //setGraph();
+    setAverageCommentsGraph();
   }
 
   void _dateString(DateTime? startDt, DateTime? endDt, String? mode) {
@@ -87,6 +162,12 @@ class _PullAverageCommentsState extends State<PullAverageComments> {
   }
 
   @override
+  void initState() {
+    setAverageCommentsGraph();
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Column(children: [
       Card(
@@ -102,14 +183,17 @@ class _PullAverageCommentsState extends State<PullAverageComments> {
                   SizedBox(
                     width: 90.0,
                     child: DropdownButtonFormField(
-                      value: "drop1",
-                      items: dropValue.map((String item) {
+                      value: sampling,
+                      items: samplings.map((String item) {
                         return DropdownMenuItem(
                           value: item,
                           child: Text(item),
                         );
                       }).toList(),
-                      onChanged: (String? newValue) {},
+                      onChanged: (String? newValue) {
+                        setState(() => sampling = newValue!);
+                        setAverageCommentsGraph();
+                      },
                     ),
                   ),
                   Text(dateString),
@@ -128,7 +212,7 @@ class _PullAverageCommentsState extends State<PullAverageComments> {
                         setState(() {
                           _dateString(_selectedDateRange.start,
                               _selectedDateRange.end, 'Max');
-                          //setGraph();
+                          setAverageCommentsGraph();
                         });
                       })
                 ],
@@ -143,16 +227,21 @@ class _PullAverageCommentsState extends State<PullAverageComments> {
                 primaryXAxis: CategoryAxis(),
                 title: ChartTitle(
                     text:
-                        'Nb commentaires moyen sur la période : $averageComments'),
+                        'Nombre de commentaires moyen sur la période : ${averageComments.toStringAsFixed(3)}'),
                 tooltipBehavior: TooltipBehavior(
                     enable: true,
                     header: '',
-                    format: 'point.x : point.y tâche(s) terminée(s)'),
+                    format: 'point.y commentaires, en moyenne, le point.x'),
                 series: <ChartSeries<ChartData, String>>[
               ColumnSeries<ChartData, String>(
+                  color: Colors.green,
                   dataSource: chartData,
+                  dataLabelSettings: const DataLabelSettings(
+                      isVisible: true,
+                      textStyle: TextStyle(color: Colors.grey, fontSize: 12)),
                   xValueMapper: (ChartData data, _) => data.x,
-                  yValueMapper: (ChartData data, _) => data.y)
+                  yValueMapper: (ChartData data, _) => data.y,
+                  dataLabelMapper: (ChartData data, _) => data.label)
             ])),
       ))
     ]);
@@ -160,7 +249,8 @@ class _PullAverageCommentsState extends State<PullAverageComments> {
 }
 
 class ChartData {
-  ChartData(this.x, this.y);
+  ChartData(this.x, this.y, this.label);
   final String x;
-  final int y;
+  final double y;
+  final String label;
 }

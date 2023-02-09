@@ -39,7 +39,7 @@ class _PullAverageSizeState extends State<PullAverageSize> {
                               borderRadius:
                                   BorderRadius.all(Radius.circular(50))),
                           label: Text(
-                            '$averageSize commits',
+                            '${averageSize.toStringAsFixed(2)} commits',
                             style: const TextStyle(fontWeight: FontWeight.w600),
                           )))
                 ])));
