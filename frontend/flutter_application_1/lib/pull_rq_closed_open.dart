@@ -2,6 +2,8 @@ import 'dart:convert';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
+double closePourcentage = 0.2;
+
 class PullOpenClose extends StatefulWidget {
   const PullOpenClose({super.key});
 
@@ -10,10 +12,9 @@ class PullOpenClose extends StatefulWidget {
 }
 
 class _PullOpenCloseState extends State<PullOpenClose> {
-  double closePourcentage = 0.2;
-  var redTextStyle = TextStyle(
+  var redTextStyle = const TextStyle(
       color: Color(0xffFF2F2F), fontWeight: FontWeight.w600, fontSize: 15);
-  var greenTextStyle = TextStyle(
+  var greenTextStyle = const TextStyle(
       color: Color(0xff00DB09), fontWeight: FontWeight.w600, fontSize: 15);
 
   @override
@@ -29,10 +30,10 @@ class _PullOpenCloseState extends State<PullOpenClose> {
                   Wrap(
                       spacing: 10,
                       crossAxisAlignment: WrapCrossAlignment.center,
-                      children: [
+                      children: const [
                         Icon(Icons.pie_chart_outline_rounded),
                         Text(
-                            "Rapport entre le nombre de pull-request fermé et ouverte"),
+                            "Part de pull request fermées sur le nombre total de pull request"),
                       ]),
                   Wrap(
                     crossAxisAlignment: WrapCrossAlignment.center,
@@ -42,11 +43,11 @@ class _PullOpenCloseState extends State<PullOpenClose> {
                       DecoratedBox(
                           decoration: BoxDecoration(
                             borderRadius:
-                                BorderRadius.all(Radius.circular(5.0)),
+                                const BorderRadius.all(Radius.circular(5.0)),
                             gradient: LinearGradient(
                                 begin: Alignment.centerLeft,
                                 end: Alignment.centerRight,
-                                colors: [
+                                colors: const [
                                   Color(0xffFF2F2F),
                                   Color(0xffFF2F2F),
                                   Color(0xff00DB09),
@@ -59,7 +60,7 @@ class _PullOpenCloseState extends State<PullOpenClose> {
                                   1
                                 ]),
                           ),
-                          child: SizedBox(height: 20, width: 80)),
+                          child: const SizedBox(height: 20, width: 320)),
                       Text("${(1 - closePourcentage) * 100}%",
                           style: greenTextStyle)
                     ],
