@@ -19,15 +19,20 @@ class _PullPageLayout extends State<PullPageLayout> {
   void getPullRequestsInfo() {
     nbPullRequestWaiting = 0;
     int nbPullRequestClosed = 0;
+    //averageSize = 0;
+    int sumSize = 0;
     for (var task in tasks) {
       if (task['content']['__typename'] == 'PullRequest') {
         task['content']['state'] == 'OPEN'
             ? nbPullRequestWaiting++
             : nbPullRequestClosed++;
+        sumSize +=
+            int.parse(task['content']['commits']['totalCount'].toString());
       }
     }
     closePourcentage =
         nbPullRequestWaiting / (nbPullRequestWaiting + nbPullRequestClosed);
+    averageSize = sumSize / (nbPullRequestWaiting + nbPullRequestClosed);
   }
 
   @override
@@ -44,8 +49,8 @@ class _PullPageLayout extends State<PullPageLayout> {
         Expanded(child: PullAverageTimeToSolve()),
       ]),
       PullOpenClose(),
+      PullAverageSize(),
       PullAverageComments(),
-      PullAverageSize()
     ]);
   }
 }
