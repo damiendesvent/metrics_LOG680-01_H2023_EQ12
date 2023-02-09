@@ -7,7 +7,7 @@ import 'package:flutter_application_1/widgets/pull_requests_page/pull_page.dart'
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
-
+import './widgets/tasks_page/columns_nb_task.dart';
 import 'api/api.dart';
 
 List tasks = [];
@@ -15,6 +15,7 @@ List<Map> columns = [];
 int _pageDisplayIndex =
     0; //'0' for the project tasks page and '1' for the pull requests page.
 String endTitle = '';
+bool showPullRequests = true;
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -161,29 +162,36 @@ class _MyHomePageState extends State<MyHomePage> {
     _getGithubInitialData = getProjectInfos(true);
   }
 
-  // @override
-  // Widget build(BuildContext context) => FutureBuilder(
-  //     future: getProjectInfos(),
-  //     builder: (context, snapshot) {
-  //       return Scaffold(
-  //           backgroundColor: const Color.fromRGBO(243, 243, 243, 1),
-  //           appBar: AppBar(
-  //             title: Text(widget.title),
-  //           ),
-  //           drawer: _buildDrawer(),
-  //           body: Container(
-  //               padding: const EdgeInsets.all(20.0),
-  //               child: snapshot.hasData && tasks.isNotEmpty
-  //                   ? _bodyWidgets.elementAt(_pageDisplayIndex)
-  //                   : const Center(child: CircularProgressIndicator())));
-  //     });
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
         backgroundColor: const Color.fromRGBO(243, 243, 243, 1),
         appBar: AppBar(
           title: Text(widget.title + endTitle),
+          actions: _pageDisplayIndex == 0
+              ? [
+                  Padding(
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 10, horizontal: 30),
+                      child: Container(
+                          decoration: BoxDecoration(
+                              color: Colors.blueGrey.shade100,
+                              borderRadius: BorderRadius.circular(30),
+                              border: Border.all(width: 0.5)),
+                          padding: const EdgeInsets.all(5),
+                          child: Row(children: [
+                            Switch(
+                                value: showPullRequests,
+                                onChanged: (value) => setState(() {
+                                      showPullRequests = value;
+                                    })),
+                            const Text(' voir les Pull Request ',
+                                style: TextStyle(
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.black))
+                          ])))
+                ]
+              : null,
         ),
         drawer: _buildDrawer(),
         body: DefaultTextStyle(
@@ -268,6 +276,8 @@ class _MyHomePageState extends State<MyHomePage> {
                 onTap: () {
                   setState(() {
                     endTitle = 'métriques des pull requests';
+                    showPullRequests = true;
+                    getProjectInfos(false);
                     _pageDisplayIndex = 1;
                     Navigator.of(context).pop();
                   });

@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../main.dart';
 
-bool showPullRequests = true;
-
 class ColumnsNbTask extends StatefulWidget {
   const ColumnsNbTask({super.key});
 
@@ -18,31 +16,13 @@ class _ColumnsNbTask extends State<ColumnsNbTask> {
           child: Container(
         width: double.maxFinite,
         padding: const EdgeInsets.all(15.0),
-        child: Row(children: [
-          Wrap(
-              crossAxisAlignment: WrapCrossAlignment.center,
-              spacing: 15,
-              children: const [
-                Icon(Icons.calculate_rounded, size: 25),
-                Text("Tâches actives par colonne")
-              ]),
-          Spacer(),
-          Container(
-              decoration: BoxDecoration(
-                  color: Colors.grey.shade100,
-                  borderRadius: BorderRadius.circular(30),
-                  border: Border.all(width: 0.5)),
-              padding: EdgeInsets.all(5),
-              child: Row(children: [
-                Switch(
-                    value: showPullRequests,
-                    onChanged: (value) => setState(() {
-                          showPullRequests = value;
-                        })),
-                Text(' voir les Pull Request ',
-                    style: TextStyle(fontWeight: FontWeight.w600))
-              ]))
-        ]),
+        child: Wrap(
+            crossAxisAlignment: WrapCrossAlignment.center,
+            spacing: 15,
+            children: const [
+              Icon(Icons.calculate_rounded, size: 25),
+              Text("Tâches actives par colonne")
+            ]),
       )),
       const SizedBox(height: 3.0),
       Row(
