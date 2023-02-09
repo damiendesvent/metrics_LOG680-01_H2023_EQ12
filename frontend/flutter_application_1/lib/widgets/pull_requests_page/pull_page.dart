@@ -51,7 +51,7 @@ class _PullPageLayout extends State<PullPageLayout> {
             Expanded(child: PullAverageSize()),
           ]),
           const PullOpenClose(),
-          const SizedBox(height: 30),
+          const Spacer(),
           Row(
             children: const [
               Expanded(

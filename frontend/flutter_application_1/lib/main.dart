@@ -12,6 +12,9 @@ import 'api/api.dart';
 
 List tasks = [];
 List<Map> columns = [];
+int _pageDisplayIndex =
+    0; //'0' for the project tasks page and '1' for the pull requests page.
+String endTitle = '';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -25,11 +28,11 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Tableau des métriques',
+      title: 'Tableaux de bord',
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: const MyHomePage(title: 'Tableau des métriques'),
+      home: MyHomePage(title: 'Tableau de bord : '),
     );
   }
 }
@@ -45,10 +48,8 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   String description =
-      "Dashboard des métriques pour le laboratoire 1 de LOG680\n\nEquipe :\n - Damien\n - Bruno\n - Dorian Perthuis";
+      "Dashboard des métriques pour le laboratoire 1 de LOG680\n\nEquipe :\n - Damien Desvent\n - Bruno Moya\n - Dorian Perthuis";
 
-  int _pageDisplayIndex =
-      0; //'0' for the project tasks page and '1' for the pull requests page.
   final List<Widget> _bodyWidgets = [
     const TasksPageLayout(),
     const PullPageLayout()
@@ -98,7 +99,7 @@ class _MyHomePageState extends State<MyHomePage> {
     Uri graphQlUri = Uri.parse('https://api.github.com/graphql');
 
     String query =
-        "query{ user(login: \"${_ownerController.text}\") {  projectV2(number: ${_projectController.text}) { ... on ProjectV2 { items(first: 100) { nodes { fieldValues(last: 1) { nodes { ... on ProjectV2ItemFieldSingleSelectValue { name createdAt} } } content { ... on DraftIssue { title body } ... on Issue { __typename title state closedAt assignees(first: 10) { nodes { login } } } ... on PullRequest {__typename title state closedAt createdAt commits(last: 200) { totalCount } totalCommentsCount assignees(first: 10) { nodes { name } } } } creator { login } } } } } } } ";
+        "query{ user(login: \"${_ownerController.text}\") {  projectV2(number: ${_projectController.text}) { ... on ProjectV2 { items(first: 100) { nodes { fieldValues(last: 1) { nodes { ... on ProjectV2ItemFieldSingleSelectValue { name createdAt} } } content { ... on DraftIssue { title body } ... on Issue { __typename title state closedAt assignees(first: 10) { nodes { login } } } ... on PullRequest {__typename title state mergedBy { login } closedAt createdAt commits(last: 200) { totalCount } totalCommentsCount assignees(first: 10) { nodes { name } } } } creator { login } } } } } } } ";
 
     http.Response response = await http.post(graphQlUri,
         headers: {
@@ -156,6 +157,7 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     super.initState();
+    endTitle = 'tâches du projet';
     _getGithubInitialData = getProjectInfos(true);
   }
 
@@ -181,7 +183,7 @@ class _MyHomePageState extends State<MyHomePage> {
     return Scaffold(
         backgroundColor: const Color.fromRGBO(243, 243, 243, 1),
         appBar: AppBar(
-          title: Text(widget.title),
+          title: Text(widget.title + endTitle),
         ),
         drawer: _buildDrawer(),
         body: DefaultTextStyle(
@@ -250,6 +252,7 @@ class _MyHomePageState extends State<MyHomePage> {
                             : FontWeight.normal)),
                 onTap: () {
                   setState(() {
+                    endTitle = 'tâches du projet';
                     _pageDisplayIndex = 0;
                     Navigator.of(context).pop();
                   });
@@ -264,6 +267,7 @@ class _MyHomePageState extends State<MyHomePage> {
                             : FontWeight.normal)),
                 onTap: () {
                   setState(() {
+                    endTitle = 'métriques des pull requests';
                     _pageDisplayIndex = 1;
                     Navigator.of(context).pop();
                   });
