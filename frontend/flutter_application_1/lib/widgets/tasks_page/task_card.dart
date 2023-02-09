@@ -6,12 +6,12 @@ class TaskCard extends StatelessWidget {
   TaskCard(this.task, this.customCard, {super.key});
 
   Map task;
-  bool customCard = false; // if true, json is different than orignial github json as it comes from our api
+  bool customCard =
+      false; // if true, json is different than orignial github json as it comes from our api
 
   var chipNames = [];
   String taskName = "";
   String status = "";
-  String assigneeName = "";
   String creatorName = "";
   String createdAt = "";
   String taskType = "";
@@ -23,67 +23,63 @@ class TaskCard extends StatelessWidget {
   Widget build(BuildContext context) {
     if (!customCard) {
       taskName = task['content']['title'];
-      //status = task['fieldValues']['nodes'][0]['name'];
       columnName = task['fieldValues']['nodes'][0]['name'];
       status = task['content']['state'];
-      taskType = "- " +  task['content']['__typename'];
+      taskType = "- " + task['content']['__typename'];
 
-      assigneeName = task['content']['assignees']['nodes'].isEmpty
-          ? ""
-          : task['content']['assignees']['nodes'][0]['login'];
-      if (assigneeName.isNotEmpty && !chipNames.contains(assigneeName)) {
-        chipNames.add(assigneeName);
-      }
+      task['content']['assignees']['nodes']
+          .forEach((assignee) => chipNames.add(assignee['login'] ?? ''));
       creatorName = task['creator']['login'];
       createdAt = task['fieldValues']['nodes'][0]['createdAt'].substring(
           0, task['fieldValues']['nodes'][0]['createdAt'].indexOf('T'));
+    } else {
+      // decode task name to utf8 to display emojis correctly
+      taskName = utf8.decode(task['name'].toString().codeUnits);
 
-    }
-    else
-    {
-        // decode task name to utf8 to display emojis correctly
-        taskName = utf8.decode(task['name'].toString().codeUnits);
+      columnName = task['column_name'];
+      //taskName = task['name'];
 
+      if (task['type_name'] == 'Issue') {
+        status = task['state'];
+      } else {
+        status = task['pull_state'];
+      }
 
-        columnName = task['column_name'];
-        //taskName = task['name'];
+      // parse assignee as a python list []
+      String assignee = task['assignees'];
+      assignee = assignee.substring(1, assignee.length - 1);
+      List<String> assigneeList = assignee.split(',');
 
-        if (task['type_name'] == 'Issue')
-        {
-          status = task['state'];
-        } else {
-          status = task['pull_state'];
-        }
+      /* ancienne version pour les chipNames
+      assigneeName = utf8.decode(assigneeList[0].toString().codeUnits);
 
-        // parse assignee as a python list []
-        String assignee = task['assignees'];
-        assignee = assignee.substring(1, assignee.length - 1);
-        List<String> assigneeList = assignee.split(',');
-        assigneeName = utf8.decode(assigneeList[0].toString().codeUnits);
+      // remove quotes from assignee name
+      assigneeName = assigneeName.replaceAll("'", '');
 
-        // remove quotes from assignee name
-        assigneeName = assigneeName.replaceAll("'", '');
+      if (assigneeName.isNotEmpty && !chipNames.contains(assigneeName)) {
+        chipNames.add(assigneeName);
+      }*/
 
-        if (assigneeName.isNotEmpty && !chipNames.contains(assigneeName)) {
-          chipNames.add(assigneeName);
-        }
+      //nouvelle version
+      assigneeList.forEach((assigneeName) => chipNames.add(
+          utf8.decode(assigneeName.toString().codeUnits).replaceAll("'", '')));
 
-        creatorName = utf8.decode(task['creator'].toString().codeUnits);
-        createdAt = task['created_at'].substring(0, task['created_at'].indexOf('T'));
+      creatorName = utf8.decode(task['creator'].toString().codeUnits);
+      createdAt =
+          task['created_at'].substring(0, task['created_at'].indexOf('T'));
 
-        double leadTimeSeconds = task['lead_time'];
+      double leadTimeSeconds = task['lead_time'];
 
-        if (leadTimeSeconds > 0)
-        {
-          int days = (leadTimeSeconds / 86400).floor();
-          int hours = ((leadTimeSeconds % 86400) / 3600).floor();
-          int minutes = (((leadTimeSeconds % 86400) % 3600) / 60).floor();
-          int seconds = (((leadTimeSeconds % 86400) % 3600) % 60).floor();
+      if (leadTimeSeconds > 0) {
+        int days = (leadTimeSeconds / 86400).floor();
+        int hours = ((leadTimeSeconds % 86400) / 3600).floor();
+        int minutes = (((leadTimeSeconds % 86400) % 3600) / 60).floor();
+        int seconds = (((leadTimeSeconds % 86400) % 3600) % 60).floor();
 
-          leadTime = "${days}d:${hours}h:${minutes}m";
-        }
+        leadTime = "${days}d:${hours}h:${minutes}m";
+      }
 
-        taskType = "- " +  task['type_name'];
+      taskType = "- " + task['type_name'];
     }
 
     return Container(
@@ -100,7 +96,9 @@ class TaskCard extends StatelessWidget {
               taskName,
               style: const TextStyle(fontWeight: FontWeight.w900),
             ),
-            Container(alignment: Alignment.centerRight, child: Text("$status $taskType - $columnName"))
+            Container(
+                alignment: Alignment.centerRight,
+                child: Text("$status $taskType - $columnName"))
           ]),
           TableRow(children: [
             Container(
@@ -109,10 +107,8 @@ class TaskCard extends StatelessWidget {
                   "Créé par $creatorName le $createdAt",
                   style: const TextStyle(fontSize: 12, color: Colors.blueGrey),
                 )),
-
             Container()
           ]),
-
           TableRow(children: [
             Wrap(
               spacing: 5,
@@ -133,10 +129,10 @@ class TaskCard extends StatelessWidget {
                         avatar: const Icon(Icons.access_time_rounded),
                         shape: RoundedRectangleBorder(
                             borderRadius:
-                            const BorderRadius.all(Radius.circular(50)),
+                                const BorderRadius.all(Radius.circular(50)),
                             side: BorderSide(
                                 color: Colors.grey.shade600, width: 1)),
-                        label:  Text(
+                        label: Text(
                           leadTime,
                           style: const TextStyle(fontWeight: FontWeight.w600),
                         ))))
