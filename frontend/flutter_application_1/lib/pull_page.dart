@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_application_1/pull_nb_en_attente.dart';
 import 'package:flutter_application_1/pull_average_time_to_solve.dart';
 import 'package:flutter_application_1/pull_rq_closed_open.dart';
+import 'package:flutter_application_1/pull_nb_average_comments.dart';
 
 class PullPageLayout extends StatefulWidget {
   const PullPageLayout({super.key});
@@ -21,7 +22,8 @@ class _PullPageLayout extends State<PullPageLayout> {
         Expanded(child: PullNbEnAttente()),
         Expanded(child: PullAverageTimeToSolve()),
       ]),
-      PullOpenClose()
+      PullOpenClose(),
+      PullAverageComments()
     ]);
   }
 }
