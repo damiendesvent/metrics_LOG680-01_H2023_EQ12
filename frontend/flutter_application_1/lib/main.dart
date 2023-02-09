@@ -2,8 +2,8 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/api/shared_preferences.dart';
-import 'package:flutter_application_1/task_page.dart';
-import 'package:flutter_application_1/pull_page.dart';
+import 'package:flutter_application_1/widgets/tasks_page/task_page.dart';
+import 'package:flutter_application_1/widgets/pull_requests_page/pull_page.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -54,11 +54,11 @@ class _MyHomePageState extends State<MyHomePage> {
     const PullPageLayout()
   ];
 
-  late TextEditingController _projectController= TextEditingController();
+  late TextEditingController _projectController = TextEditingController();
   late TextEditingController _ownerController = TextEditingController();
   late TextEditingController _tokenController = TextEditingController();
 
-  late Future<String>  _getGithubInitialData;
+  late Future<String> _getGithubInitialData;
 
   String _project = "";
   String _owner = "";
@@ -70,9 +70,12 @@ class _MyHomePageState extends State<MyHomePage> {
     if (restoreFromPreferences) {
       // restore the values from the shared preferences //applique le projet par défaut si aucun projet n'est donné
       await SharedApi.getInstance().then((prefs) {
-        _projectController.text = (prefs.getInt('project_id') ?? '3').toString();
-        _ownerController.text = prefs.getString('project_owner') ?? 'damiendesvent';
-        _tokenController.text = prefs.getString('github_token') ?? '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';
+        _projectController.text =
+            (prefs.getInt('project_id') ?? '3').toString();
+        _ownerController.text =
+            prefs.getString('project_owner') ?? 'damiendesvent';
+        _tokenController.text = prefs.getString('github_token') ??
+            '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';
         //getProjectInfos();
         _token = _tokenController.text;
         _owner = _ownerController.text;
@@ -95,7 +98,7 @@ class _MyHomePageState extends State<MyHomePage> {
     Uri graphQlUri = Uri.parse('https://api.github.com/graphql');
 
     String query =
-        "query{ user(login: \"${_ownerController.text}\") {  projectV2(number: ${_projectController.text}) { ... on ProjectV2 { items(first: 100) { nodes { fieldValues(last: 1) { nodes { ... on ProjectV2ItemFieldSingleSelectValue { name createdAt} } } content { ... on DraftIssue { title body } ... on Issue { __typename title state closedAt assignees(first: 10) { nodes { login } } } ... on PullRequest {__typename title state closedAt assignees(first: 10) { nodes { name } } } } creator { login } } } } } } } ";
+        "query{ user(login: \"${_ownerController.text}\") {  projectV2(number: ${_projectController.text}) { ... on ProjectV2 { items(first: 100) { nodes { fieldValues(last: 1) { nodes { ... on ProjectV2ItemFieldSingleSelectValue { name createdAt} } } content { ... on DraftIssue { title body } ... on Issue { __typename title state closedAt assignees(first: 10) { nodes { login } } } ... on PullRequest {__typename title state closedAt createdAt commits(last: 200) { totalCount } totalCommentsCount assignees(first: 10) { nodes { name } } } } creator { login } } } } } } } ";
 
     http.Response response = await http.post(graphQlUri,
         headers: {
@@ -150,7 +153,6 @@ class _MyHomePageState extends State<MyHomePage> {
     return "No project found";
   }
 
-
   @override
   void initState() {
     super.initState();
@@ -174,7 +176,6 @@ class _MyHomePageState extends State<MyHomePage> {
   //                   : const Center(child: CircularProgressIndicator())));
   //     });
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -188,7 +189,7 @@ class _MyHomePageState extends State<MyHomePage> {
           textAlign: TextAlign.center,
           child: FutureBuilder<String>(
             future:
-            _getGithubInitialData, // a previously-obtained Future<String> or null
+                _getGithubInitialData, // a previously-obtained Future<String> or null
             builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
               List<Widget> children;
               if (snapshot.hasData) {
@@ -292,11 +293,11 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
           spacing,
           TextField(
-            controller: _ownerController,
-            decoration: const InputDecoration(
-              border: OutlineInputBorder(),
-              labelText: 'Owner Name',
-            ),
+              controller: _ownerController,
+              decoration: const InputDecoration(
+                border: OutlineInputBorder(),
+                labelText: 'Owner Name',
+              )),
           spacing,
           TextField(
             obscureText: true,
@@ -308,80 +309,77 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
           spacing,
           ElevatedButton(
-              onPressed: () async {
+            onPressed: () async {
+              // check if the given project id and owner name are valid
+              // and fetch the data from github
+              try {
+                String result = await getProjectInfos(
+                    false); // false means that the data is not fetched from the shared preferences
 
-                // check if the given project id and owner name are valid
-                // and fetch the data from github
-                try {
-                  String result = await getProjectInfos(false); // false means that the data is not fetched from the shared preferences
+                print(result);
 
-
-
-                  print(result);
-
-                  if (result == 'Project found') {
-
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text("Changing to project ${_projectController.text}"),
-                      ),
-                    );
-
-                    // if the project is found, save the project id and owner name
-                    // in the shared preferences
-                    SharedApi.saveProjectInfo(int.parse(_projectController.text),
-                        _ownerController.text, _tokenController.text);
-
-                    await Api().setProject(int.parse(_projectController.text),
-                        _ownerController.text, _tokenController.text);
-
-                    _token = _tokenController.text;
-                    _project = _projectController.text;
-                    _owner = _ownerController.text;
-
-                    //_getGithubInitialData = getProjectInfos(true);
-
-                    // close the drawer
-                    Navigator.of(context).pop();
-
-                    setState(() {
-                      //_getGithubInitialData = getProjectInfos(true);
-                      print("State set");
-                      tasks.clear();
-                      columns.clear();
-
-                      _getGithubInitialData = getProjectInfos(true);
-                    });
-                  }
-                  else {
-                    print("Error: $result");
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text("$result with project id ${_projectController.text} and owner name ${_ownerController.text}"),
-                      ),
-                    );
-                  }
-                }
-                catch (e) {
-                  // close the drawer
-                  Navigator.of(context).pop();
-                  print("Error catched: $e");
-
+                if (result == 'Project found') {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text("${e} with project id ${_projectController.text} and owner name ${_ownerController.text}"),
+                      content: Text(
+                          "Changing to project ${_projectController.text}"),
                     ),
                   );
 
-                  // restore the project id and owner name
-                  _projectController.text = _project.toString();
-                  _ownerController.text = _owner;
-                  _tokenController.text = _token;
+                  // if the project is found, save the project id and owner name
+                  // in the shared preferences
+                  SharedApi.saveProjectInfo(int.parse(_projectController.text),
+                      _ownerController.text, _tokenController.text);
 
+                  await Api().setProject(int.parse(_projectController.text),
+                      _ownerController.text, _tokenController.text);
+
+                  _token = _tokenController.text;
+                  _project = _projectController.text;
+                  _owner = _ownerController.text;
+
+                  //_getGithubInitialData = getProjectInfos(true);
+
+                  // close the drawer
+                  Navigator.of(context).pop();
+
+                  setState(() {
+                    //_getGithubInitialData = getProjectInfos(true);
+                    print("State set");
+                    tasks.clear();
+                    columns.clear();
+
+                    _getGithubInitialData = getProjectInfos(true);
+                  });
+                } else {
+                  print("Error: $result");
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                          "$result with project id ${_projectController.text} and owner name ${_ownerController.text}"),
+                    ),
+                  );
                 }
-              },
-              child: const Text('Save'),
-            ),
+              } catch (e) {
+                // close the drawer
+                Navigator.of(context).pop();
+                print("Error catched: $e");
+
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                        "${e} with project id ${_projectController.text} and owner name ${_ownerController.text}"),
+                  ),
+                );
+
+                // restore the project id and owner name
+                _projectController.text = _project.toString();
+                _ownerController.text = _owner;
+                _tokenController.text = _token;
+              }
+            },
+            child: const Text('Save'),
+          ),
         ],
       ),
     );
