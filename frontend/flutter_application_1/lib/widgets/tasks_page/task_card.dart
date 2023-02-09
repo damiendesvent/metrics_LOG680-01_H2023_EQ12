@@ -87,7 +87,10 @@ class TaskCard extends StatelessWidget {
         decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(15),
             border: Border.all(
-                color: const Color.fromRGBO(191, 191, 191, 1), width: 1)),
+                color: taskType == '- Issue'
+                    ? Colors.green.shade400
+                    : Colors.purple.shade300,
+                width: 1)),
         child: Table(columnWidths: const {
           1: FractionColumnWidth(0.25)
         }, children: [
