@@ -37,7 +37,7 @@ class _PullAverageCommentsState extends State<PullAverageComments> {
   List<ChartData> chartData = [];
   double averageComments = 5;
 
-  void setAverageCommentsGraph() {
+  void getAverageCommentsGraph() {
     chartData.clear();
     List selectedPullRequests = [];
     Map sumPerSampling = {};
@@ -121,7 +121,7 @@ class _PullAverageCommentsState extends State<PullAverageComments> {
     }
     _dateString(_selectedDateRange.start, _selectedDateRange.end, "Specific");
     maxPeriod = false;
-    setAverageCommentsGraph();
+    getAverageCommentsGraph();
   }
 
   void _dateString(DateTime? startDt, DateTime? endDt, String? mode) {
@@ -163,7 +163,7 @@ class _PullAverageCommentsState extends State<PullAverageComments> {
 
   @override
   void initState() {
-    setAverageCommentsGraph();
+    getAverageCommentsGraph();
     super.initState();
   }
 
@@ -179,7 +179,7 @@ class _PullAverageCommentsState extends State<PullAverageComments> {
                 spacing: 15,
                 children: [
                   const Icon(Icons.comment_rounded, size: 25),
-                  const Text("Nombre de commentaires moyen par"),
+                  const Text("Commentaires par"),
                   SizedBox(
                     width: 90.0,
                     child: DropdownButtonFormField(
@@ -192,7 +192,7 @@ class _PullAverageCommentsState extends State<PullAverageComments> {
                       }).toList(),
                       onChanged: (String? newValue) {
                         setState(() => sampling = newValue!);
-                        setAverageCommentsGraph();
+                        getAverageCommentsGraph();
                       },
                     ),
                   ),
@@ -212,7 +212,7 @@ class _PullAverageCommentsState extends State<PullAverageComments> {
                         setState(() {
                           _dateString(_selectedDateRange.start,
                               _selectedDateRange.end, 'Max');
-                          setAverageCommentsGraph();
+                          getAverageCommentsGraph();
                         });
                       })
                 ],

@@ -44,13 +44,19 @@ class _PullPageLayout extends State<PullPageLayout> {
   @override
   Widget build(BuildContext context) {
     return Column(children: [
-      Row(children: [
+      Row(children: const [
         Expanded(child: PullNbEnAttente()),
-        Expanded(child: PullAverageTimeToSolve()),
+        Expanded(child: PullAverageSize()),
       ]),
-      PullOpenClose(),
-      PullAverageSize(),
-      PullAverageComments(),
+      const PullOpenClose(),
+      Row(
+        children: const [
+          Expanded(
+            child: PullAverageTimeToSolve(),
+          ),
+          Expanded(child: PullAverageComments()),
+        ],
+      )
     ]);
   }
 }
