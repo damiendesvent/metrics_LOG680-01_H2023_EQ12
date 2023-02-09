@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:syncfusion_flutter_charts/charts.dart';
 
 class PullAverageComments extends StatefulWidget {
   const PullAverageComments({super.key});
@@ -16,6 +17,9 @@ class _PullAverageCommentsState extends State<PullAverageComments> {
   var dropValue = ["drop1", "drop2", "drop3"];
   bool maxPeriod = true;
   String dateString = "sur toute la période";
+  List<ChartData> chartData = [];
+  int averageComments = 5;
+
   final ButtonStyle style = ElevatedButton.styleFrom(
     textStyle: const TextStyle(fontSize: 20),
   );
@@ -84,49 +88,79 @@ class _PullAverageCommentsState extends State<PullAverageComments> {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-        child: Container(
-            width: double.maxFinite,
-            padding: const EdgeInsets.all(15.0),
-            child: Wrap(
-              crossAxisAlignment: WrapCrossAlignment.center,
-              spacing: 15,
-              children: [
-                const Icon(Icons.calendar_month_rounded, size: 25),
-                const Text("Nombre de commentaires moyen par"),
-                SizedBox(
-                  width: 90.0,
-                  child: DropdownButtonFormField(
-                    value: "drop1",
-                    items: dropValue.map((String item) {
-                      return DropdownMenuItem(
-                        value: item,
-                        child: Text(item),
-                      );
-                    }).toList(),
-                    onChanged: (String? newValue) {},
+    return Column(children: [
+      Card(
+          child: Container(
+              width: double.maxFinite,
+              padding: const EdgeInsets.all(15.0),
+              child: Wrap(
+                crossAxisAlignment: WrapCrossAlignment.center,
+                spacing: 15,
+                children: [
+                  const Icon(Icons.calendar_month_rounded, size: 25),
+                  const Text("Nombre de commentaires moyen par"),
+                  SizedBox(
+                    width: 90.0,
+                    child: DropdownButtonFormField(
+                      value: "drop1",
+                      items: dropValue.map((String item) {
+                        return DropdownMenuItem(
+                          value: item,
+                          child: Text(item),
+                        );
+                      }).toList(),
+                      onChanged: (String? newValue) {},
+                    ),
                   ),
-                ),
-                Text(dateString),
-                ElevatedButton(
-                  style: style,
-                  onPressed: _show,
-                  child:
-                      const Icon(Icons.date_range_rounded, color: Colors.white),
-                ),
-                const Spacer(),
-                InputChip(
-                    backgroundColor: Colors.grey,
-                    label: const Text('Max'),
-                    selected: maxPeriod,
-                    onSelected: (bool selected) {
-                      setState(() {
-                        _dateString(_selectedDateRange.start,
-                            _selectedDateRange.end, 'Max');
-                        //setGraph();
-                      });
-                    })
-              ],
-            )));
+                  Text(dateString),
+                  ElevatedButton(
+                    style: style,
+                    onPressed: _show,
+                    child: const Icon(Icons.date_range_rounded,
+                        color: Colors.white),
+                  ),
+                  const Spacer(),
+                  InputChip(
+                      backgroundColor: Colors.grey,
+                      label: const Text('Max'),
+                      selected: maxPeriod,
+                      onSelected: (bool selected) {
+                        setState(() {
+                          _dateString(_selectedDateRange.start,
+                              _selectedDateRange.end, 'Max');
+                          //setGraph();
+                        });
+                      })
+                ],
+              ))),
+      const SizedBox(height: 3.0),
+      Card(
+          child: Container(
+        width: double.maxFinite,
+        padding: const EdgeInsets.all(15.0),
+        child: Center(
+            child: SfCartesianChart(
+                primaryXAxis: CategoryAxis(),
+                title: ChartTitle(
+                    text:
+                        'Nb commentaires moyen sur la période : $averageComments'),
+                tooltipBehavior: TooltipBehavior(
+                    enable: true,
+                    header: '',
+                    format: 'point.x : point.y tâche(s) terminée(s)'),
+                series: <ChartSeries<ChartData, String>>[
+              ColumnSeries<ChartData, String>(
+                  dataSource: chartData,
+                  xValueMapper: (ChartData data, _) => data.x,
+                  yValueMapper: (ChartData data, _) => data.y)
+            ])),
+      ))
+    ]);
   }
+}
+
+class ChartData {
+  ChartData(this.x, this.y);
+  final String x;
+  final int y;
 }
