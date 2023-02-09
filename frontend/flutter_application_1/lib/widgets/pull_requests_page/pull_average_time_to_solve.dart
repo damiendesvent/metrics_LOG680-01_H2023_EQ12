@@ -229,11 +229,12 @@ class _PullAverageTimeToSolveState extends State<PullAverageTimeToSolve> {
                 primaryXAxis: CategoryAxis(),
                 title: ChartTitle(
                     text:
-                        'Temps de résolution moyen sur la période : ${averageLeadTimes.toStringAsFixed(3)}'),
+                        'Temps de résolution moyen sur la période : ${averageLeadTimes.round()} min'),
                 tooltipBehavior: TooltipBehavior(
                     enable: true,
                     header: '',
-                    format: 'point.y commentaires, en moyenne, le point.x'),
+                    format:
+                        'point.y minutes, en moyenne, le point.x'),
                 series: <ChartSeries<ChartData, String>>[
               ColumnSeries<ChartData, String>(
                   color: Colors.purple,
