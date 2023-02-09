@@ -68,7 +68,7 @@ class _MyHomePageState extends State<MyHomePage> {
       _tokenController = TextEditingController(
           text: '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');
     }
-
+    print(_ownerController.text);
     Uri graphQlUri = Uri.parse('https://api.github.com/graphql');
 
     String query =
@@ -124,9 +124,10 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     super.initState();
-    _projectController = TextEditingController();
-    _ownerController = TextEditingController();
-    _tokenController = TextEditingController();
+    _projectController = TextEditingController(text: '3');
+    _ownerController = TextEditingController(text: 'damiendesvent');
+    _tokenController =
+        TextEditingController(text: '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');
 
     // restore the values from the shared preferences
     SharedPreferences.getInstance().then((prefs) {
@@ -248,6 +249,7 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget _buildProjectIdInput() {
     // add an input to enter project id and owner name
     // and a button to fetch the data from github
+    const Widget spacing = SizedBox(height: 10);
     return Container(
       child: Padding(
         padding: const EdgeInsets.all(20.0),
@@ -261,6 +263,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 labelText: 'Project ID',
               ),
             ),
+            spacing,
             TextField(
               controller: _ownerController,
               decoration: const InputDecoration(
@@ -268,13 +271,16 @@ class _MyHomePageState extends State<MyHomePage> {
                 labelText: 'Owner Name',
               ),
             ),
+            spacing,
             TextField(
+              obscureText: true,
               controller: _tokenController,
               decoration: const InputDecoration(
                 border: OutlineInputBorder(),
                 labelText: 'Github Token',
               ),
             ),
+            spacing,
             ElevatedButton(
               onPressed: () async {
                 SharedApi.saveProjectInfo(int.parse(_projectController.text),
@@ -282,7 +288,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 await Api().setProject(int.parse(_projectController.text),
                     _ownerController.text, _tokenController.text);
 
-                //getProjectInfos();
+                getProjectInfos();
 
                 setState(() {});
               },
