@@ -1,44 +1,43 @@
-# LOG680-01_H2023_EQ12
+![image](https://user-images.githubusercontent.com/107462586/218005836-a271fd28-7d87-426d-b00e-f46dc0572aec.png)
 
-## Description
+# Bienvenue
 
+Bienvue sur le projet du cours LOG680 (Introduction à l'approche DevOps).
+
+Ce repository traite de la création d'une interface web de visualisation des métriques de tâches et de pull request sur un projet GitHub.
+
+Ce projet est réalisé dans un contexte scolaire et n'est pas à vocation commerciale.
+
+***
+
+# Informations générales
+
+## Crédits
+
+Ecole de Technologie Supérieure de Montréal, Canada  
 Cours LOG680 - Introduction à l'approche DevOps  
 Session Hiver 2023  
 Groupe 01  
 Equipe 12  
 
-## Membres
+## Contributeurs
 
 Damien Desvent  
 Bruno Moya Ruiz  
 Dorian Perthuis  
 
+***
 
-## Exécuter le serveur
+# Wiki
 
-Le serveur fonctionne avec Docker et Docker-Compose. Pour exécuter le serveur ici la comande:
+Pour plus d'informations sur le projet, consultez le Wiki.
 
-`sudo  docker compose --file "api/docker-compose.yaml" up -d --build `
+[Wiki du projet](https://github.com/damiendesvent/metrics_LOG680-01_H2023_EQ12/wiki/home)
+* [Contributeurs](https://github.com/damiendesvent/metrics_LOG680-01_H2023_EQ12/wiki/Contributeurs)
+* [Structure du projet](https://github.com/damiendesvent/metrics_LOG680-01_H2023_EQ12/wiki/structure-du-projet)
 
-Cette comande, initialise le postgresql database dans docker-compose.yaml, et apres un container avec Python 3.10 pour faire fonctionner fastapi.
+* [Environnement d'exécution](https://github.com/damiendesvent/metrics_LOG680-01_H2023_EQ12/wiki/Environnement-d'-exécution)
+* [Installation](https://github.com/damiendesvent/metrics_LOG680-01_H2023_EQ12/wiki/Installation)
 
-Le port du API est 5000. Il fait une snapshot chaque 20 secondes (0.2 minutes), mais sa ce peut change avec un fichier json settings.json si le serveur fonctionne en locale:
-
-`
-{
-    "github_token": "ghp_xxxxXXXXXXXXXXXXXXXXXXXXXX",
-    "snapshot_interval" : 0.2
-}
-`
-
-Sa est modifiable dans le docker-compose.yaml file pour Docker.
-
-Le point de terminaison 'get_all_columns_with_cards' renvoie toutes les colonnes avec les cartes originales, qui sont mises à jour au fur et à mesure que l'on passe d'une colonne à l'autre. Si le carte a l'atribute ferme (issue or pull request is closed), le lead time est calcule. Github nous donne le temps ou la carte est cree et fermee.
-
-Lorsqu'une carte est déplacée vers une colonne, une "copie" de la carte pointant vers la carte mère originale est créée, et cette "copie" est ajoutée à la nouvelle colonne. De cette façon, lorsque vous recherchez dans une colonne particulière des cartes qui sont là depuis un certain temps, ces cartes "copies" apparaîtront parce qu'elles ont été là. En ne les ajoutant que lorsqu'une carte a été déplacée, nous vérifions qu'aucune copie inutile de cartes n'est créée dans les colonnes.
-
-## Architecture
-Frontend : flutter
-middleware : API Rest
-Banckend : FastAPI (Python)
-BDD : PostgreSQL
+* [Interface web (Frontend)](https://github.com/damiendesvent/metrics_LOG680-01_H2023_EQ12/wiki/Interface-web)
+* [API (Backend)](https://github.com/damiendesvent/metrics_LOG680-01_H2023_EQ12/wiki/API)
