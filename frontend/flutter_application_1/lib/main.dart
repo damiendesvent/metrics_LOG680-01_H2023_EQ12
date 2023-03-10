@@ -275,7 +275,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   });
                 }),
             ListTile(
-                selected: _pageDisplayIndex == 0,
+                selected: _pageDisplayIndex == 2,
                 leading: const Icon(Icons.loop_rounded),
                 title: Text("Intégration Continue",
                     style: TextStyle(
