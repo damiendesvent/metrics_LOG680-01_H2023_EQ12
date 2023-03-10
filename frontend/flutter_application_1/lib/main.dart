@@ -7,6 +7,7 @@ import 'package:flutter_application_1/widgets/pull_requests_page/pull_page.dart'
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_application_1/widgets/CI_page/CI_page.dart';
 
 import 'api/api.dart';
 
@@ -52,7 +53,8 @@ class _MyHomePageState extends State<MyHomePage> {
 
   final List<Widget> _bodyWidgets = [
     const TasksPageLayout(),
-    const PullPageLayout()
+    const PullPageLayout(),
+    const CIPageLayout()
   ];
 
   late TextEditingController _projectController = TextEditingController();
@@ -269,6 +271,21 @@ class _MyHomePageState extends State<MyHomePage> {
                   setState(() {
                     endTitle = 'métriques des pull requests';
                     _pageDisplayIndex = 1;
+                    Navigator.of(context).pop();
+                  });
+                }),
+            ListTile(
+                selected: _pageDisplayIndex == 0,
+                leading: const Icon(Icons.loop_rounded),
+                title: Text("Intégration Continue",
+                    style: TextStyle(
+                        fontWeight: _pageDisplayIndex == 0
+                            ? FontWeight.bold
+                            : FontWeight.normal)),
+                onTap: () {
+                  setState(() {
+                    endTitle = "Métriques de l'intégration continue";
+                    _pageDisplayIndex = 2;
                     Navigator.of(context).pop();
                   });
                 }),
