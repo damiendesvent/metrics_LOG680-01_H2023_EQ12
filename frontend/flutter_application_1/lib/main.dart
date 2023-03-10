@@ -279,7 +279,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 leading: const Icon(Icons.loop_rounded),
                 title: Text("Intégration Continue",
                     style: TextStyle(
-                        fontWeight: _pageDisplayIndex == 0
+                        fontWeight: _pageDisplayIndex == 2
                             ? FontWeight.bold
                             : FontWeight.normal)),
                 onTap: () {
