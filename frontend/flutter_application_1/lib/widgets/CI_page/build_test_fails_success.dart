@@ -23,25 +23,25 @@ class _BuildTestSuccessState extends State<BuildTestSuccess> {
         child: Container(
             padding: const EdgeInsets.all(15.0),
             width: double.maxFinite,
-            child: Wrap(
-                crossAxisAlignment: WrapCrossAlignment.center,
-                alignment: WrapAlignment.spaceBetween,
+            child:
+                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Wrap(
+                  spacing: 15,
+                  alignment: WrapAlignment.start,
+                  direction: Axis.horizontal,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: const [
+                    Icon(Icons.check_box_rounded),
+                    Text("Part de tests ratées par rapport aux tests réussis"),
+                  ]),
+              const SizedBox(height: 15),
+              Row(
                 children: [
-                  Wrap(
-                      spacing: 10,
-                      crossAxisAlignment: WrapCrossAlignment.center,
-                      children: const [
-                        Icon(Icons.check_box_rounded),
-                        Text(
-                            "Part de tests ratées par rapport aux tests réussis"),
-                      ]),
-                  Wrap(
-                    crossAxisAlignment: WrapCrossAlignment.center,
-                    spacing: 5,
-                    children: [
-                      Text("${((failPourcentage) * 100).round()} %",
-                          style: redTextStyle),
-                      DecoratedBox(
+                  Text("${((failPourcentage) * 100).round()} %",
+                      style: redTextStyle),
+                  const SizedBox(width: 5),
+                  Expanded(
+                      child: DecoratedBox(
                           decoration: BoxDecoration(
                             borderRadius:
                                 const BorderRadius.all(Radius.circular(5.0)),
@@ -61,11 +61,12 @@ class _BuildTestSuccessState extends State<BuildTestSuccess> {
                                   1
                                 ]),
                           ),
-                          child: const SizedBox(height: 20, width: 320)),
-                      Text("${((1 - failPourcentage) * 100).round()} %",
-                          style: greenTextStyle)
-                    ],
-                  )
-                ])));
+                          child: const SizedBox(height: 20, width: 320))),
+                  const SizedBox(width: 5),
+                  Text("${((1 - failPourcentage) * 100).round()} %",
+                      style: greenTextStyle)
+                ],
+              )
+            ])));
   }
 }
