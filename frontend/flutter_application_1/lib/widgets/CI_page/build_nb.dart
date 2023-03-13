@@ -16,6 +16,7 @@ class _BuildNbState extends State<BuildNb> {
   Widget build(BuildContext context) {
     return Card(
         child: Container(
+      width: double.maxFinite,
       padding: const EdgeInsets.all(15.0),
       child: Wrap(
           crossAxisAlignment: WrapCrossAlignment.center,
