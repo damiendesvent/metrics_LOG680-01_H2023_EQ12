@@ -37,11 +37,14 @@ class BuildCard extends StatelessWidget {
             Container()
           ]),
           TableRow(children: [
-            Chip(
-                label: Text(branchName,
-                    style: const TextStyle(
-                        fontSize: 12, fontWeight: FontWeight.w600)),
-                backgroundColor: Colors.pink.shade100),
+            Wrap(children: [
+              Chip(
+                  avatar: const Icon(Icons.merge_rounded),
+                  label: Text(branchName,
+                      style: const TextStyle(
+                          fontSize: 12, fontWeight: FontWeight.w600)),
+                  backgroundColor: Colors.pink.shade100)
+            ]),
             Container(
                 alignment: Alignment.centerRight,
                 child: Tooltip(
