@@ -1,8 +1,9 @@
+import '../../main.dart';
 import 'dart:convert';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-int nbBuild = 5;
+int nbBuild = builds.length;
 
 class BuildNb extends StatefulWidget {
   const BuildNb({super.key});

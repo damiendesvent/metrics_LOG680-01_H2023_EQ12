@@ -16,19 +16,16 @@ class _BuildListState extends State<BuildList> {
   DateTimeRange? _selectedDateRange;
 
   List selectedBuilds = [0, 0, 0];
-  var dropdownvalue = columns.first['name'];
   var chipNames = ["Semaine", "Mois", "Max", "Aucun"];
   var dateString = "sur toute la période";
   int? selectedIndex = 2;
   List<Widget> cards = [];
   bool init = true;
 
-  bool isCustomCard = false;
-
   @override
   void initState() {
     super.initState();
-    //updateSelectTasks(dropdownvalue);
+    updateSelectBuilds();
   }
 
   void _show() async {
@@ -48,7 +45,7 @@ class _BuildListState extends State<BuildList> {
         _selectedDateRange = result;
       });
 
-      //updateSelectTasks(dropdownvalue);
+      updateSelectBuilds();
     }
 
     _dateString(_selectedDateRange?.start, _selectedDateRange?.end, "Specific");
@@ -99,83 +96,68 @@ class _BuildListState extends State<BuildList> {
         }
         break;
     }
-    //updateSelectTasks(dropdownvalue);
+    updateSelectBuilds();
   }
 
   final ButtonStyle style = ElevatedButton.styleFrom(
     textStyle: const TextStyle(fontSize: 20),
   );
 
-  /* 
-  void updateSelectTasks(var columnName) {
-    // TODO: contact api to get tasks with column name
-    print("updateSelectTasks: " + columnName);
-
+  void updateSelectBuilds() {
     // get cards by column name and date range
     print(_selectedDateRange);
-    if (_selectedDateRange != null) {
-      Api()
-          .getCardsByColumnAndTimeRange(columnName, _selectedDateRange!)
-          .then((value) {
-        //print("value: $value");
-
-        // parse string to json
-        dynamic x2 = jsonDecode(value);
-        print("x2: $x2");
-
-        selectedTasks.clear();
-        // add cards to list
-        for (var i = 0; i < x2['cards'].length; i++) {
-          var json = x2['cards'][i];
-
-          // add cplumn name to json
-          json['column_name'] = columnName;
-          selectedTasks.add(json);
-
-          //selectedTasks.add(x2['cards'][i]);
-        }
-        print("selectedTasks: $selectedTasks");
-
-        setState(() {
-          isCustomCard = true;
-        });
-      });
-    } else {
-      setState(() {
-        selectedTasks.clear();
-        for (var task in tasks) {
-          if (task['fieldValues']['nodes'][0]['name'] == columnName) {
-            selectedTasks.add(task);
+    setState(() {
+      selectedBuilds.clear();
+      for (Map tag in builds) {
+        int buildTime = 0;
+        if (_selectedDateRange != null) {
+          DateTime createdDateTime = DateTime.parse(tag['tag_last_pushed']);
+          if (createdDateTime.isAfter(_selectedDateRange!.start
+                  .subtract(const Duration(days: 1))) &&
+              createdDateTime.isBefore(
+                  _selectedDateRange!.end.add(const Duration(days: 1)))) {
+            for (Map workflow in workflows) {
+              if (workflow['head_sha'] == tag['name'] &&
+                  workflow['name'] == 'Docker Image CI') {
+                DateTime createdDateTime =
+                    DateTime.parse(workflow['created_at']);
+                DateTime updatedDateTime =
+                    DateTime.parse(workflow['updated_at']);
+                buildTime =
+                    updatedDateTime.difference(createdDateTime).inSeconds;
+              }
+            }
+            tag['build_time'] = buildTime;
+            selectedBuilds.add(tag);
           }
+        } else {
+          for (Map workflow in workflows) {
+            if (workflow['head_sha'] == tag['name'] &&
+                workflow['name'] == 'Docker Image CI') {
+              DateTime createdDateTime = DateTime.parse(workflow['created_at']);
+              DateTime updatedDateTime = DateTime.parse(workflow['updated_at']);
+              buildTime = updatedDateTime.difference(createdDateTime).inSeconds;
+            }
+          }
+          tag['build_time'] = buildTime;
+          selectedBuilds.add(tag);
         }
-        isCustomCard = false;
-      });
+      }
+    });
+  }
+
+  num getAverageBuildTime(List builds) {
+    num sum = 0;
+    int nbTags = 0;
+    for (Map tag in builds) {
+      if (tag['build_time'] > 0) {
+        sum += tag['build_time'];
+        nbTags++;
+      }
     }
-  }*/
 
-  /*String getAverageLeadTime(List tasks) {
-    if (tasks.isEmpty || !isCustomCard) {
-      return "0";
-    }
-
-    double sum = 0;
-    for (var task in tasks) {
-      sum += task['lead_time'];
-    }
-
-    double leadTimeAverage = sum / tasks.length;
-
-    if (leadTimeAverage > 0) {
-      int days = (leadTimeAverage / 86400).floor();
-      int hours = ((leadTimeAverage % 86400) / 3600).floor();
-      int minutes = (((leadTimeAverage % 86400) % 3600) / 60).floor();
-      int seconds = (((leadTimeAverage % 86400) % 3600) % 60).floor();
-
-      return "${days}d:${hours}h:${minutes}m";
-    } else {
-      return "0";
-    }
-  }*/
+    return sum / nbTags;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -245,10 +227,7 @@ class _BuildListState extends State<BuildList> {
           //       ),
           //     )),
 
-          if (selectedBuilds
-              .isNotEmpty /*&&
-              getAverageLeadTime(selectedTasks) != "0"*/
-          )
+          if (selectedBuilds.isNotEmpty)
             Card(
                 child: Container(
                     padding: const EdgeInsets.all(15.0),
@@ -258,7 +237,7 @@ class _BuildListState extends State<BuildList> {
                             avatar: const Icon(Icons.access_time_rounded),
                             backgroundColor: Colors.blue.shade100,
                             label: Text(
-                              /*getAverageLeadTime(selectedTasks),*/ "5d:5h",
+                              '${getAverageBuildTime(selectedBuilds)} s',
                               style: TextStyle(fontWeight: FontWeight.w600),
                             )))))
           else
@@ -285,7 +264,8 @@ class _BuildListState extends State<BuildList> {
                       width: double.maxFinite,
                       padding: const EdgeInsets.all(15.0),
                       child: ListView.separated(
-                          itemBuilder: (task, index) => BuildCard(),
+                          itemBuilder: (tag, index) =>
+                              BuildCard(selectedBuilds[index]),
                           separatorBuilder: (_, index) {
                             return const SizedBox(height: 10);
                           },
