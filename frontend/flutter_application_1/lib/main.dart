@@ -51,7 +51,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   String description =
-      "Dashboard des métriques pour le laboratoire 1 de LOG680\n\nEquipe :\n - Damien Desvent\n - Bruno Moya\n - Dorian Perthuis";
+      "Dashboard des métriques pour le cours de LOG680\n\nEquipe :\n - Damien Desvent\n - Bruno Moya\n - Dorian Perthuis";
 
   final List<Widget> _bodyWidgets = [
     const TasksPageLayout(),
@@ -317,7 +317,11 @@ class _MyHomePageState extends State<MyHomePage> {
     return Drawer(
       child: ListView(
         children: <Widget>[
-          DrawerHeader(child: Text(description)),
+          DrawerHeader(
+              child: Text(
+            description,
+            style: TextStyle(fontWeight: FontWeight.bold),
+          )),
           Column(children: <Widget>[
             ListTile(
                 selected: _pageDisplayIndex == 0,
