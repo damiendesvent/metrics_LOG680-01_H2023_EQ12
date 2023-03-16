@@ -16,6 +16,8 @@ List<Map> columns = [];
 int _pageDisplayIndex =
     0; //'0' for the project tasks page and '1' for the pull requests page.
 String endTitle = '';
+List workflows = [];
+List builds = [];
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -68,7 +70,8 @@ class _MyHomePageState extends State<MyHomePage> {
   String _token = "";
 
   Future<String> getProjectInfos(bool restoreFromPreferences) async {
-    print("getProjectInfos called with $restoreFromPreferences");
+    print(
+        "getProjectInfos called with restorFromPreferences = $restoreFromPreferences");
 
     if (restoreFromPreferences) {
       // restore the values from the shared preferences //applique le projet par défaut si aucun projet n'est donné
@@ -88,16 +91,6 @@ class _MyHomePageState extends State<MyHomePage> {
 
     print(_projectController.text);
 
-    //applique le projet par défaut si aucun projet n'est donné
-    // if (_projectController.text.isEmpty &&
-    //     _ownerController.text.isEmpty &&
-    //     _tokenController.text.isEmpty) {
-    //   _projectController = TextEditingController(text: '3');
-    //   _ownerController = TextEditingController(text: 'damiendesvent');
-    //   _tokenController = TextEditingController(
-    //       text: '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');
-    // }
-
     Uri graphQlUri = Uri.parse('https://api.github.com/graphql');
 
     String query =
@@ -110,8 +103,6 @@ class _MyHomePageState extends State<MyHomePage> {
         body: json.encode({
           "query": query,
         }));
-
-    print(query);
 
     if (response.body.isNotEmpty) {
       var items = json.decode(response.body);
@@ -156,11 +147,95 @@ class _MyHomePageState extends State<MyHomePage> {
     return "No project found";
   }
 
+  Future<String> getWorkflowsInfos(bool restoreFromPreferences) async {
+    if (restoreFromPreferences) {
+      // restore the values from the shared preferences //applique le projet par défaut si aucun projet n'est donné
+      await SharedApi.getInstance().then((prefs) {
+        _projectController.text =
+            (prefs.getInt('project_id') ?? '3').toString();
+        _ownerController.text =
+            prefs.getString('project_owner') ?? 'damiendesvent';
+        _tokenController.text = prefs.getString('github_token') ??
+            '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';
+        //getProjectInfos();
+        _token = _tokenController.text;
+        _owner = _ownerController.text;
+        _project = _projectController.text;
+      });
+    }
+
+    Uri restApiWorkflowsUri = Uri.parse(
+        'https://api.github.com/repos/damiendesvent/hvac_LOG680-01_H2023_EQ12/actions/runs');
+
+    http.Response response = await http.get(restApiWorkflowsUri, headers: {
+      'Authorization': 'Bearer ${_tokenController.text}',
+    });
+
+    if (response.body.isNotEmpty) {
+      Map items = json.decode(response.body);
+
+      if (items.containsKey('workflow_runs')) {
+        workflows = items['workflow_runs'];
+      } else {
+        return Future.error('Impossible de récuperer les workflows');
+      }
+
+      return "Workflows found";
+    }
+
+    return "No Workflow found";
+  }
+
+  Future<String> getBuildsInfos(bool restoreFromPreferences) async {
+    if (restoreFromPreferences) {
+      // restore the values from the shared preferences //applique le projet par défaut si aucun projet n'est donné
+      await SharedApi.getInstance().then((prefs) {
+        _projectController.text =
+            (prefs.getInt('project_id') ?? '3').toString();
+        _ownerController.text =
+            prefs.getString('project_owner') ?? 'damiendesvent';
+        _tokenController.text = prefs.getString('github_token') ??
+            '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';
+        //getProjectInfos();
+        _token = _tokenController.text;
+        _owner = _ownerController.text;
+        _project = _projectController.text;
+      });
+    }
+
+    Uri dockerHubApiTagsUri = Uri.parse(
+        'https://hub.docker.com/v2/namespaces/elblogbruno/repositories/hvac-log680-eq12/tags');
+
+    try {
+      http.Response response = await http.get(dockerHubApiTagsUri, headers: {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "GET,PUT,PATCH,POST,DELETE",
+        "Access-Control-Allow-Headers":
+            "Origin, X-Requested-With, Content-Type, Accept",
+      });
+
+      if (response.body.isNotEmpty) {
+        Map items = json.decode(response.body);
+
+        if (items.containsKey('results')) {
+          builds = items['results'];
+        }
+        return "Workflows found";
+      }
+    } catch (e) {
+      print(e);
+    }
+
+    return "No Workflow found";
+  }
+
   @override
   void initState() {
     super.initState();
     endTitle = 'tâches du projet';
     _getGithubInitialData = getProjectInfos(true);
+    getWorkflowsInfos(true);
+    getBuildsInfos(true);
   }
 
   // @override
@@ -336,6 +411,8 @@ class _MyHomePageState extends State<MyHomePage> {
               try {
                 String result = await getProjectInfos(
                     false); // false means that the data is not fetched from the shared preferences
+                getWorkflowsInfos(false);
+                getBuildsInfos(false);
 
                 print(result);
 
@@ -371,6 +448,8 @@ class _MyHomePageState extends State<MyHomePage> {
                     columns.clear();
 
                     _getGithubInitialData = getProjectInfos(true);
+                    getWorkflowsInfos(true);
+                    getBuildsInfos(true);
                   });
                 } else {
                   print("Error: $result");
