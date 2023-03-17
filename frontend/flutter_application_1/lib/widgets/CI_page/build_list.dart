@@ -237,7 +237,7 @@ class _BuildListState extends State<BuildList> {
                             avatar: const Icon(Icons.access_time_rounded),
                             backgroundColor: Colors.blue.shade100,
                             label: Text(
-                              '${getAverageBuildTime(selectedBuilds)} s',
+                              '${getAverageBuildTime(selectedBuilds).toStringAsFixed(2)} s',
                               style: TextStyle(fontWeight: FontWeight.w600),
                             )))))
           else
