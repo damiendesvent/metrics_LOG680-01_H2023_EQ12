@@ -162,8 +162,8 @@ class _TaskListState extends State<TaskList> {
   }
 
   String getAverageLeadTime(List tasks) {
-    if (tasks.isEmpty || !isCustomCard) {
-      return "0";
+    if (tasks == null || tasks.isEmpty || !isCustomCard) {
+      return "Aucune donnée";
     }
 
     double sum = 0;
@@ -272,53 +272,37 @@ class _TaskListState extends State<TaskList> {
           //       ),
           //     )),
 
-          if (selectedTasks.isNotEmpty && getAverageLeadTime(selectedTasks) != "0")
-
-            Card(
-                child: Container(
-                    padding: const EdgeInsets.all(15.0),
-                    child:  Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          Tooltip(
-                              message: "Lead time moyen",
-                              child:Chip(
-                                  avatar: const Icon(Icons.access_time_rounded),
-                                  backgroundColor: Colors.blue.shade100,
-                                  label: Text(
-                                    getAverageLeadTime(selectedTasks), //"5d:5h",
-                                    style: TextStyle(fontWeight: FontWeight.w600),
-                                  ))),
-                          const SizedBox(width: 10),
-                          Tooltip(
-                              message: "Nombre de tâches",
-                              child: Chip(
-                                  avatar: const Icon(Icons.list),
-                                  backgroundColor: Colors.blue.shade100,
-                                  label: Text(
-                                    getNumberOfTasks(selectedTasks), //"5d:5h",
-                                    style: TextStyle(fontWeight: FontWeight.w600),
-                                  ))),
-                        ]
-                    )
-                ))
-
-
-          else
-            Card(
-                child: Container(
-                    padding: const EdgeInsets.all(15.0),
-                    child: Tooltip(
-                        message: "Lead time moyen",
-                        child: Chip(
-                            avatar: const Icon(Icons.access_time_rounded),
-                            backgroundColor: Colors.blue.shade100,
-                            label: Text(
-                              "Aucune Donnée", //"5d:5h",
-                              style: TextStyle(fontWeight: FontWeight.w600),
-                            )))))
+          Card(
+              child: Container(
+                  padding: const EdgeInsets.all(15.0),
+                  child:  Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Tooltip(
+                            message: "Lead time moyen",
+                            child:Chip(
+                                avatar: const Icon(Icons.access_time_rounded),
+                                backgroundColor: Colors.blue.shade100,
+                                label: Text(
+                                  getAverageLeadTime(selectedTasks), //"5d:5h",
+                                  style: TextStyle(fontWeight: FontWeight.w600),
+                                ))),
+                        const SizedBox(width: 10),
+                        Tooltip(
+                            message: "Nombre de tâches",
+                            child: Chip(
+                                avatar: const Icon(Icons.list),
+                                backgroundColor: Colors.blue.shade100,
+                                label: Text(
+                                  getNumberOfTasks(selectedTasks), //"5d:5h",
+                                  style: TextStyle(fontWeight: FontWeight.w600),
+                                ))),
+                      ]
+                  )
+              ))
         ]),
+
         const SizedBox(height: 3),
         if (selectedTasks.isEmpty)
           const Expanded(child: Center(child: Text("Aucune tâche")))
