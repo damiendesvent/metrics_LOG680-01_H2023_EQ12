@@ -3,16 +3,16 @@ import 'dart:convert';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-int nbBuild = builds.length;
+int nbWorkflow = workflows.length;
 
-class BuildNb extends StatefulWidget {
-  const BuildNb({super.key});
+class WorkflowNb extends StatefulWidget {
+  const WorkflowNb({super.key});
 
   @override
-  State<BuildNb> createState() => _BuildNbState();
+  State<WorkflowNb> createState() => _WorkflowNbState();
 }
 
-class _BuildNbState extends State<BuildNb> {
+class _WorkflowNbState extends State<WorkflowNb> {
   @override
   Widget build(BuildContext context) {
     return Card(
@@ -28,7 +28,7 @@ class _BuildNbState extends State<BuildNb> {
                 spacing: 15,
                 children: [
                   Icon(Icons.numbers_rounded, size: 25),
-                  Text("Nombre de Build")
+                  Text("Nombre de runs du Workflow")
                 ]),
             Container(
                 height: 30,
@@ -37,7 +37,7 @@ class _BuildNbState extends State<BuildNb> {
                 decoration: BoxDecoration(
                     border: Border.all(color: Colors.black54, width: 1.5),
                     borderRadius: const BorderRadius.all(Radius.circular(20))),
-                child: Text("$nbBuild",
+                child: Text("$nbWorkflow",
                     style: const TextStyle(
                         fontSize: 20, fontWeight: FontWeight.w700)))
           ]),

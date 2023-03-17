@@ -1,21 +1,23 @@
 import 'dart:convert';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'build_card.dart';
+import 'workflow_card.dart';
 import '../../api/api.dart';
 import '../../main.dart';
 
-class BuildList extends StatefulWidget {
-  const BuildList({super.key});
+class WorkflowList extends StatefulWidget {
+  const WorkflowList({super.key});
 
   @override
-  State<StatefulWidget> createState() => _BuildListState();
+  State<StatefulWidget> createState() => _WorkflowListState();
 }
 
-class _BuildListState extends State<BuildList> {
+class _WorkflowListState extends State<WorkflowList> {
   DateTimeRange? _selectedDateRange;
 
-  List selectedBuilds = [0, 0, 0];
+  List selectedWorkflows = [0, 0, 0];
+  num totalCount = 1;
+  num totalPassCount = 0;
   var chipNames = ["Semaine", "Mois", "Max", "Aucun"];
   var dateString = "sur toute la période";
   int? selectedIndex = 2;
@@ -25,7 +27,7 @@ class _BuildListState extends State<BuildList> {
   @override
   void initState() {
     super.initState();
-    updateSelectBuilds();
+    updateSelectWorkflows();
   }
 
   void _show() async {
@@ -45,7 +47,7 @@ class _BuildListState extends State<BuildList> {
         _selectedDateRange = result;
       });
 
-      updateSelectBuilds();
+      updateSelectWorkflows();
     }
 
     _dateString(_selectedDateRange?.start, _selectedDateRange?.end, "Specific");
@@ -96,67 +98,66 @@ class _BuildListState extends State<BuildList> {
         }
         break;
     }
-    updateSelectBuilds();
+    updateSelectWorkflows();
   }
 
   final ButtonStyle style = ElevatedButton.styleFrom(
     textStyle: const TextStyle(fontSize: 20),
   );
 
-  void updateSelectBuilds() {
+  void updateSelectWorkflows() {
     // get cards by column name and date range
     print(_selectedDateRange);
     setState(() {
-      selectedBuilds.clear();
-      for (Map tag in builds) {
-        int buildTime = 0;
+      selectedWorkflows.clear();
+      for (Map workflow in workflows) {
         if (_selectedDateRange != null) {
-          DateTime createdDateTime = DateTime.parse(tag['tag_last_pushed']);
+          DateTime createdDateTime = DateTime.parse(workflow['created_at']);
           if (createdDateTime.isAfter(_selectedDateRange!.start
                   .subtract(const Duration(days: 1))) &&
               createdDateTime.isBefore(
                   _selectedDateRange!.end.add(const Duration(days: 1)))) {
-            for (Map workflow in workflows) {
-              if (workflow['head_sha'] == tag['name'] &&
-                  workflow['name'] == 'Docker Image CI') {
-                DateTime createdDateTime =
-                    DateTime.parse(workflow['created_at']);
-                DateTime updatedDateTime =
-                    DateTime.parse(workflow['updated_at']);
-                buildTime =
-                    updatedDateTime.difference(createdDateTime).inSeconds;
-              }
+            var myWorkflow = selectedWorkflows.firstWhere(
+                (e) => e['name'] == workflow['name'],
+                orElse: () => null);
+            if (myWorkflow == null) {
+              myWorkflow = {
+                'name': workflow['name'],
+                'count': 1,
+                'passCount': workflow['conclusion'] == 'success' ? 1 : 0
+              };
+              selectedWorkflows.add(myWorkflow);
+            } else {
+              myWorkflow['count']++;
+              myWorkflow['passCount'] +=
+                  workflow['conclusion'] == 'success' ? 1 : 0;
             }
-            tag['build_time'] = buildTime;
-            selectedBuilds.add(tag);
           }
         } else {
-          for (Map workflow in workflows) {
-            if (workflow['head_sha'] == tag['name'] &&
-                workflow['name'] == 'Docker Image CI') {
-              DateTime createdDateTime = DateTime.parse(workflow['created_at']);
-              DateTime updatedDateTime = DateTime.parse(workflow['updated_at']);
-              buildTime = updatedDateTime.difference(createdDateTime).inSeconds;
-            }
+          var myWorkflow = selectedWorkflows.firstWhere(
+              (e) => e['name'] == workflow['name'],
+              orElse: () => null);
+          if (myWorkflow == null) {
+            myWorkflow = {
+              'name': workflow['name'],
+              'count': 1,
+              'passCount': workflow['conclusion'] == 'success' ? 1 : 0
+            };
+            selectedWorkflows.add(myWorkflow);
+          } else {
+            myWorkflow['count']++;
+            myWorkflow['passCount'] +=
+                workflow['conclusion'] == 'success' ? 1 : 0;
           }
-          tag['build_time'] = buildTime;
-          selectedBuilds.add(tag);
         }
       }
-    });
-  }
-
-  num getAverageBuildTime(List builds) {
-    num sum = 0;
-    int nbTags = 0;
-    for (Map tag in builds) {
-      if (tag['build_time'] > 0) {
-        sum += tag['build_time'];
-        nbTags++;
+      totalCount = 0;
+      totalPassCount = 0;
+      for (Map workflow in selectedWorkflows) {
+        totalCount += workflow['count'];
+        totalPassCount += workflow['passCount'];
       }
-    }
-
-    return sum / nbTags;
+    });
   }
 
   @override
@@ -172,8 +173,8 @@ class _BuildListState extends State<BuildList> {
             crossAxisAlignment: WrapCrossAlignment.center,
             direction: Axis.horizontal,
             children: [
-              const Icon(Icons.build_rounded, size: 25),
-              Text(" Builds $dateString"),
+              const Icon(Icons.directions_run, size: 25),
+              Text(" workflows $dateString"),
               ElevatedButton(
                 style: style,
                 onPressed: _show,
@@ -227,36 +228,37 @@ class _BuildListState extends State<BuildList> {
           //       ),
           //     )),
 
-          if (selectedBuilds.isNotEmpty)
+          if (selectedWorkflows.isNotEmpty)
             Card(
                 child: Container(
                     padding: const EdgeInsets.all(15.0),
                     child: Tooltip(
-                        message: "Temps moyen de déploiment",
+                        message: "Total",
                         child: Chip(
-                            avatar: const Icon(Icons.access_time_rounded),
+                            avatar: const Icon(Icons.functions),
                             backgroundColor: Colors.blue.shade100,
                             label: Text(
-                              '${getAverageBuildTime(selectedBuilds)} s',
-                              style: TextStyle(fontWeight: FontWeight.w600),
+                              '$totalPassCount / $totalCount',
+                              style:
+                                  const TextStyle(fontWeight: FontWeight.w600),
                             )))))
           else
             Card(
                 child: Container(
                     padding: const EdgeInsets.all(15.0),
                     child: Tooltip(
-                        message: "Temps moyen de déploiment",
+                        message: "Total",
                         child: Chip(
                             avatar: const Icon(Icons.access_time_rounded),
                             backgroundColor: Colors.blue.shade100,
-                            label: Text(
+                            label: const Text(
                               "Aucune Donnée", //"5d:5h",
                               style: TextStyle(fontWeight: FontWeight.w600),
                             )))))
         ]),
         const SizedBox(height: 3),
-        if (selectedBuilds.isEmpty)
-          const Expanded(child: Center(child: Text("Aucun build")))
+        if (selectedWorkflows.isEmpty)
+          const Expanded(child: Center(child: Text("Aucun workflow")))
         else
           Expanded(
               child: Card(
@@ -265,11 +267,11 @@ class _BuildListState extends State<BuildList> {
                       padding: const EdgeInsets.all(15.0),
                       child: ListView.separated(
                           itemBuilder: (tag, index) =>
-                              BuildCard(selectedBuilds[index]),
+                              WorkflowCard(selectedWorkflows[index]),
                           separatorBuilder: (_, index) {
                             return const SizedBox(height: 10);
                           },
-                          itemCount: selectedBuilds.length))))
+                          itemCount: selectedWorkflows.length))))
       ],
     );
   }
