@@ -16,6 +16,7 @@ class TaskCard extends StatelessWidget {
   String createdAt = "";
   String taskType = "";
   String columnName = "";
+  String updatedAt = "";
 
   String leadTime = "Aucune Donnée";
 
@@ -32,6 +33,24 @@ class TaskCard extends StatelessWidget {
       creatorName = task['creator']['login'];
       createdAt = task['fieldValues']['nodes'][0]['createdAt'].substring(
           0, task['fieldValues']['nodes'][0]['createdAt'].indexOf('T'));
+
+      if (status == 'CLOSED' || status == 'MERGED') {
+        updatedAt = task['content']['closedAt'].substring(0, task['content']['closedAt'].indexOf('T'));
+
+        double leadTimeSeconds = DateTime.parse(updatedAt)
+            .difference(DateTime.parse(createdAt))
+            .inSeconds
+            .toDouble();
+
+        if (leadTimeSeconds > 0) {
+          int days = (leadTimeSeconds / 86400).floor();
+          int hours = ((leadTimeSeconds % 86400) / 3600).floor();
+          int minutes = (((leadTimeSeconds % 86400) % 3600) / 60).floor();
+          int seconds = (((leadTimeSeconds % 86400) % 3600) % 60).floor();
+
+          leadTime = "${days}d:${hours}h:${minutes}m";
+        }
+      }
 
       //met une chip pour la personne qui a merge la PR
       if (taskType == '- PullRequest' && status == 'MERGED') {
@@ -86,6 +105,8 @@ class TaskCard extends StatelessWidget {
       }
 
       taskType = "- " + task['type_name'];
+
+      updatedAt = "- " + task['uploaded_at'].substring(0, task['uploaded_at'].indexOf('T'));
     }
 
     return Container(
@@ -113,7 +134,7 @@ class TaskCard extends StatelessWidget {
             Container(
                 padding: const EdgeInsets.fromLTRB(0, 5, 0, 15),
                 child: Text(
-                  "Créé par $creatorName le $createdAt",
+                  "Créé par $creatorName le $createdAt - mis à jour le : $updatedAt",
                   style: const TextStyle(fontSize: 12, color: Colors.blueGrey),
                 )),
             Container()

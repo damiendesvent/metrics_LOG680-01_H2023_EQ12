@@ -121,7 +121,7 @@ class _TaskListState extends State<TaskList> {
 
         // parse string to json
         dynamic x2 = jsonDecode(value);
-        print("x2: $x2");
+        //print("x2: $x2");
 
         selectedTasks.clear();
         // add cards to list
@@ -134,7 +134,7 @@ class _TaskListState extends State<TaskList> {
 
           //selectedTasks.add(x2['cards'][i]);
         }
-        print("selectedTasks: $selectedTasks");
+        //print("selectedTasks: $selectedTasks");
 
         setState(() {
           isCustomCard = true;

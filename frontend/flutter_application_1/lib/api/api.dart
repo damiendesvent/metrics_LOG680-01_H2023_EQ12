@@ -44,7 +44,7 @@ class Api {
       print("Response status: ${response.statusCode}");
 
       if (response.statusCode == 200) {
-        print("Response: " + response.body);
+        //print("Response: " + response.body);
         return response.body;
       } else {
         return Future.error("Is server running?");
